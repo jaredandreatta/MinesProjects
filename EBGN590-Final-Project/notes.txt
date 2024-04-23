@@ -1,0 +1,34 @@
+The goal of this analysis is to examine the magnitude of impact that changes in producer costs in the non-renewable energy extraction and refining sectors have on end-use consumer energy costs. I will use the special energy index as a measurement of consumer costs, and ppis of non-renewable extractors/refiners used to measure producer costs. I will use economic control variables and renewable consumption controls in the model as well.
+
+Null hypothesis-PPI price increases will have no significant effect on end-use consumer energy costsd
+
+Data descriptors:
+
+Target:
+energy_index - nominal monthly special index for energy, or Household Energy Index + Motor Fuels Index (Index February 2024 = 100)
+
+Regressors:
+ppi_coal - nominal monthly PPI index of coal extraction (Index February 2024 = 100)
+ppi_crude - nominal monthly PPI index of crude oil extraction (Index February 2024 = 100)
+ppi_nat_gas - nominal monthly PPI index of natural gas extraction (Index February 2024 = 100)
+ppi_gasoline - nominal monthly PPI index of gasoline production (Index February 2024 = 100)
+ppi_diesel - nominal monthly PPI index of diesel production (Index February 2024 = 100)
+ppi_heat_oil - nominal monthly PPI index of heating oil production (Index February 2024 = 100)
+
+Economic Controls:
+effr_change- nominal monthly effective Federal Fund Rate change (% change)
+cpi_change - nominal monthly CPI change (% change)
+dxy - US Dollar Index (Index February 2024 = 100)
+
+Energy Control:
+ren_cons_res - monthly US residential consumption of renewable energy (trillions BTU)
+
+
+
+
+Data sources-
+FRED
+US EIA
+Yahoo Finance
+US BLS CPI
+US BLS PPI
