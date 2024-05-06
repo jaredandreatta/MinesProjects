@@ -1,1 +1,1 @@
-
+These are a set of projects made for my DSCI403 (Intro to Data Science Course), including my final project, which was an attempt of time-series modeling of solar irradiance. These projects focus on learning and implementing relevant Python packages (i.e. SciKit-Learn, NumPy, Pandas, Matplotlib, etc.) with a focus on developing knowledge on machine learning methods.
