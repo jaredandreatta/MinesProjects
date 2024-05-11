@@ -1,0 +1,2 @@
+Cost: 736083.8853281135
+Status: OPTIMAL
