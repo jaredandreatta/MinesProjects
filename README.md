@@ -5,5 +5,6 @@
 ### - MEGN688 - Advanced Integer Optimization (Julia)
 ### - EBGN590 - Econometrics (Python and R)
 ### - EBGN594 - Time Series Econometrics (Python, R, and possibly some Julia)
+### - MATH408 - Computational Differential Equations (MATLAB)
 
 ### If anyone reads through any of these and has any questions, comments, or feedback, I'd be happy to hear. Thank you!
