@@ -1,0 +1,8 @@
+Hypothesis - Increases of global Brent Crude Oil spot prices will induce higher levels of interest rate set by the US Fed
+
+Variables:
+brent - Global spot price of Brent Crude Oil ($/barrel)
+fedfund - Effective federal funds rate in the United States (%)
+
+Results: 
+We obtain a coefficient of .019, suggesting that per a $1/gallon increase in Brent price, we expect a rise of .019% in the effective federal funds rate. The model has a R^2 score of-0.17, suggesting that there are significant flaws in the model. I think an appropriate hypothesis is that inflation has lagged measures in comparison to price movements, and interest rates are lagged responses to inflation, so the model needs to consider lags between the variables to obtain a more accurate measure.

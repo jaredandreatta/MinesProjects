@@ -1,0 +1,13 @@
+Hypothesis - Ambient temperature, module temperature, and irradiation inputs will have a significant linear relationship with power outputs at a solar plant for a single invertere (DC power, AC power, Daily Yield)
+
+Target vars:
+DC_POWER - DC power output in given time interval (kW)
+AC_POWER - AC power output in given time interval (kW)
+DAILY_YIELD - 24-hour yield of solar plant inverter (kW)
+
+Independent vars:
+AMBIENT_TEMPERATURE - Ambient temperature above surface of solar plant
+MODULE_TEMPERATURE - Module temperature above surface of solar plant
+IRRADIATION - Irradiation above surface of solar plant
+
+Results - In regression as a dictionary of 9 resulting linear regressions in .ipynb file
