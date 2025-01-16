@@ -4,7 +4,7 @@
 ### - DSCI403 - Advanced Data Science (Python)
 ### - MEGN688 - Advanced Integer Optimization (Julia)
 ### - EBGN590 - Econometrics (Python and R)
-### - EBGN594 - Time Series Econometrics (Python, R, and possibly some Julia)
-### - MATH408 - Computational Differential Equations (MATLAB)
+### - EENG521 - Numerical Optimization (Python)
+### - MATH531 - Linear Model Theory (Python and R)
 
 ### If anyone reads through any of these and has any questions, comments, or feedback, I'd be happy to hear. Thank you!
