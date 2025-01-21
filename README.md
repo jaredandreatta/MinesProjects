@@ -7,4 +7,4 @@
 ### - EENG521 - Numerical Optimization (Python)
 ### - MATH531 - Linear Model Theory (Python and R)
 
-### If anyone reads through any of these and has any questions, comments, or feedback, I'd be happy to hear. Thank you!
+
