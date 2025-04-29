@@ -5,6 +5,6 @@
 ### - MEGN688 - Advanced Integer Optimization (Julia)
 ### - EBGN590 - Econometrics (Python and R)
 ### - EENG521 - Numerical Optimization (Python)
-### - MATH531 - Linear Model Theory (Python and R)
+### - MATH531 - Linear Model Theory (R)
 
-### If anyone reads through any of these and has any questions, comments, or feedback, I'd be happy to hear. Thank you!
+### I also published my work online for a course in time series econometrics (EBGN594), which can be found [here](https://jaredandreatta.github.io/TimeSeriesJupyterBook/intro.html).
