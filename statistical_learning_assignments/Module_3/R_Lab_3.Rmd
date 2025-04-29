@@ -1,0 +1,115 @@
+---
+title: "R Lab 3"
+author: "Jared Andreatta"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document:
+     toc: false
+---
+
+# Libraries
+library() is used to load libraries with various tools. Here we use MASS and ISLR2 to get datasets
+```{r}
+library(MASS)
+library(ISLR2)
+```
+
+# Simple Linear Regression
+Now, we look at SLR models with a single predictor.
+
+```{r}
+head(Boston)
+```
+
+### Fitting and predicting
+We can use the lm() function to fit an OLS estimate for this dataset. We'll onlyy have a single regressor for now.
+
+
+```{r}
+# Fitting model
+lm.fit <- lm(medv~lstat, data=Boston)
+
+# Summary of linear model
+summary(lm.fit)
+
+# Attributes of fitted linear model
+names(lm.fit)
+# Coefficients 
+coef(lm.fit)
+# Confidence Intervals for Coefficient Estimates
+confint(lm.fit)
+
+# Use the predict() function to construct confidence and prediction intervals
+# Produce confidence intervals
+predict(lm.fit, data.frame(lstat=(c(5,10,15))), interval="confidence")
+# Produce prediction intervals
+predict(lm.fit, data.frame(lstat=(c(5,10,15))), interval="prediction")
+```
+### Plotting 
+```{r}
+# Plotting regression line
+attach(Boston)
+plot(lstat, medv)
+# Fitted line
+abline(lm.fit)
+# Adjust line width
+abline(lm.fit, lwd = 3)
+# Make line red color
+abline(lm.fit, lwd = 3, col = "red")
+
+# Different plotting options for the data points
+# Red color
+plot(lstat, medv, col = "red")
+# Solid dots
+plot(lstat, medv, pch = 20)
+# Pluses
+plot(lstat, medv, pch = "+")
+# All pch symbols
+plot(1:20, 1:20, pch = 1:20)
+
+# These two commands produce diagnostic plots for the lm
+par(mfrow = c(2, 2))
+plot(lm.fit)
+
+# Alternative way to examine residuals
+plot(predict(lm.fit), residuals(lm.fit)) # Computed regression residuals
+plot(predict(lm.fit), rstudent(lm.fit)) # Studentized residuals
+plot(hatvalues(lm.fit)) # Plotting hat values
+# which.max identifies the maximum value in the vector
+which.max(hatvalues(lm.fit))
+```
+# Multiple Linear Regression
+
+Here, we will add more predictors to the model.
+
+```{r}
+# Here we add age along lstat
+lm.fit <- lm(medv ~ lstat + age, data = Boston)
+summary(lm.fit)
+
+# We can use . when we call lm() to regress on all predictors
+lm.fit <- lm(medv ~ ., data = Boston)
+summary(lm.fit)
+# We can also use - to drop regressors
+lm.fit <- lm(medv ~ . -age, data = Boston)
+summary(lm.fit)
+
+# We can also access individual components of the summary as below
+summary(lm.fit)$sigma
+summary(lm.fit)$r.sq
+
+# VIF
+# We can use vif() (from car) to compute the variance inflation factors
+library(car)
+vif(lm.fit)
+```
+
+
+```{r}
+system.time(
+  for (i in 1:1000000000){
+    print(i)
+  }
+)
+```
+

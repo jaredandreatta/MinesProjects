@@ -1,0 +1,65 @@
+---
+title: "Homework 7  MATH531"
+author: "Doug Nychka"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Getting started 
+
+Loading the AudiA4 data and creating the X matrix for "broken" line
+regression. 
+
+```{r}
+library( fields) # load fields package
+load("AudiA4.rda" )
+head( AudiA4)
+mileage<- AudiA4$mileage/1000
+price<- AudiA4$price/1000
+
+cut<- 30
+  X<- cbind( ifelse( mileage<= cut, 1, 0),
+             ifelse( mileage<= cut, mileage, 0),
+             ifelse( mileage > cut, 1, 0),
+             ifelse( mileage > cut, mileage, 0)
+             )
+  
+fit<-   lm( price ~ X - 1)
+```
+For those students rusty with linear algebra in R here are OLS estimates found "by hand". 
+
+```{r}
+betaHat<- solve(t(X)%*%X)%*%t(X)%*%price
+# check 
+bothBetas<- cbind(betaHat,fit$coefficients  )
+print( bothBetas)
+
+XbetaHat<- X%*%betaHat
+test.for.zero(XbetaHat, fit$fitted.values )
+```
+
+Agreement with R function!
+
+
+A simple plot of the results. Note that using the fitted.values avoids have to 
+code directly the broken line function that was fit.
+
+
+```{r}
+plot( mileage, price, pch=16, col="grey")
+lines( mileage, fit$fitted.values, col="orange", lwd=3)
+abline( v= 30, col="black", lty=2)
+title("AudiA4 data -- broken line fit by OLS")
+```
+
+Highlight discontinuity in unconstrained fit. 
+```{r}
+plot( mileage, price, pch=16, col="grey",
+xlim=c( 20,40), ylim=c(15,35))
+lines( mileage, fit$fitted.values, col="orange", lwd=3)
+abline( v= 30, col="black", lty=2)
+```
+

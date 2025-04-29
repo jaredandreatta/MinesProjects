@@ -1,0 +1,156 @@
+---
+title: "Homework 8  MATH531"
+author: "Doug Nychka"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Getting started 
+
+Loading the AudiA4 data and creating the X matrix for "broken" line
+regression. 
+
+```{r}
+library( fields) # load fields package
+setwd("~/Dropbox/Home/Teaching/MATH531/MATH-531/MATH531S2024/Homework")
+load("AudiA4.rda" )
+head( AudiA4)
+
+# change units so the numbers are simpler
+price<- AudiA4$price/1000 # in thousands of dollars
+mileage<- AudiA4$mileage/1000 # thousands of miles
+
+# the data
+plot(mileage, price, col="grey", pch=16,
+  xlab= "miles (1000s)", ylab="price (1000s)")
+```
+
+# Problem 1
+
+Here is a standard OLS fit to these data. (You might want to review the handy "I" syntax in an lm formula.)
+
+```{r}
+OLSFit<- lm( price~ mileage + I(mileage^2))  
+summary( OLSFit)
+```
+
+
+(a) Use a qqplot  to assess if the  standarized residuals  follow a normal distribution, N(0,1) 
+To do this from base R  it is 
+```
+n<- length(OLSFit$residuals)
+p<- length(OLSFit$coefficients)
+sigma2Hat<- sum(OLSFit$residuals^2)/ ( n-p) 
+theoretical<- qnorm(  ((1:n) -.5)/n )
+
+plot( theoretical, sort(OLSFit$residuals/sqrt(sigma2Hat))
+)
+abline( 0,1, col="magenta")
+```
+
+As part of your assessment add  90% bounds at each theoretical quantile for what you would expect if the data was drawn from iid N(0,1).
+
+Hint: These 90%  intervals will involve generating Monte Carlo samples and then finding 5% and 95% quantiles. Also generate simultanoeus intervals using the Bonferroni adjustment: **.05/n** and  ** 1- .05/n **. 
+
+
+
+# Problem 2
+
+Create a set of basis functions as bumps with the form:
+\[ H(d) = (1+ d)e^(-d) \]
+and the $i^th$ basis function being 
+\[ \phi_i( u) = H( (u-v_i)/\alpha) \]
+where $\{ v_i \}$ are a grid of values and $\alpha$ a scaling parameter. I use $\alpha=10$ below, don't change that. 
+
+Use the code below to create a matrix where  all the basis functions are evaluated at all the mileages. 
+```{r}
+mGrid1<- seq( 0, 175, length.out=50)
+bigD<- rdist( mileage, mGrid1)/10 
+# 10 is a scaling  for the width of the bumps
+Phi<- (1+ bigD)* exp( -bigD)
+```
+2(a) There are 50 basis functions in this example. Plot the first, $20^{th}$ and the $45^{th}$ basis functions over the range of the mileage. Put these on the same figure for comparison. 
+
+Hint: These are the columns of $\Phi$.
+
+2(b)
+Fit an OLS model according to 
+```{r}
+FitBasis<- lm( price ~ Phi)
+```
+
+Make a scatterplot of the data and add this fitted curve to it.
+Plot the estimated curve at the finer grid of points ``` mGrid2<- seq( 0, 175, length.out= 250) ```
+
+
+
+2(c) 
+Now consider a ridge regression estimator:
+
+\[ \hat{\beta} = ( \Phi^T \Phi + \alpha I)^{-1} \Phi^T y \]
+where  $\alpha \ge 0$ and $y$ in this case is the price. 
+Predicted values are 
+\[ \hat{y}= \Phi \hat{\beta}\]
+
+Below is a handy function  to do this. Note that it is hardwired for this data set and basis. 
+
+```{r}
+mySmoother<-function(alpha){
+smootherCoef<- solve(t(Phi)%*%Phi + alpha* diag(1,50))%*%t(Phi)%*%price
+ridgeFit<-  Phi%*%smootherCoef
+# note smoother Matrix is 
+# S<- Phi%*%solve(t(Phi)%*%Phi + alpha* diag(1,50))%*%t(Phi)
+return( ridgeFit)
+}
+```
+and as a code example
+```
+fitTest<- mySmoother( .001)
+plot( mileage,price)
+lines( mileage, fitTest)
+```
+
+Vary  ```alpha```  and choose a value that subjectively looks like a good fit to these data. Add this curve to your figure in 2(b). 
+Also report the "effective number of parameters" in your choice as the trace of the matrix ```smootherMatrix ```. (You will have to adapt/hack the code for the ```mySmoother``` function to get this.)
+
+Hint: It is useful to vary $\alpha$ *equally spaced on a log scale* to get different amounts of smoothing. I used an alpha  range of 1e-6 to 1e2.
+
+EXTRA CREDIT: Explain how to modify this estimator to include a constant and linear function where as $\alpha \rightarrow \infty$ the ridge estimate is just the OLS estimate of a line. (This should help with getting a better fit at the ends.)
+
+
+# Problem 3 
+This problem compares the OLS fit quadratic function to the Bayesian version. 
+To make the uncertainty of the parameters more  comparable in size use the  X matrix:
+```{r}
+X<- cbind( 1, mileage/10, (mileage^2)/1000 )
+```
+Because this is a linear transformation you should get the same predicted values 
+and the inferences will be the same. Of course the coefficients are different. 
+```{r}
+OLSFit2<- lm( price ~ X -1)
+summary(OLSFit2)$coefficients
+```
+
+Below is an excerp from the wikipedia page on the Bayesian linear model that details the  
+ posterior distribution. 
+![Joint Posterior](HW08Posterior.png)
+For the priors applied to the quadratic regression model, set $\mu_0 =0$ $\Lambda_0 = .01$ and for the Inverse gamma prior on $\sigma^2$ use $a_0 = 1/2$ and $b_0 = (1/2)* 20$. These will give a prior  distribution around 20 with a large spread. 
+
+Now sample from the  joint posterior 10000 times. That is for 10000 repeatitions first sample $\sigma^2$ from its posterior IG distribution ( IG( a_n, b_n)) and then sample $\beta$ from a multivariate normal conditional on the value sampled for $\sigma^2$ Find the mean and standard deviations for the three regression parameters from these 10000 samples  and compare them to the OLS estimates and standard errors obtained from the OLS fit above.
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,135 @@
+\documentclass[11pt]{report}
+\nofiles
+\usepackage{amsmath}
+\usepackage{graphicx,psfrag,epsf}
+\usepackage{enumerate}
+%\usepackage{natbib}
+\usepackage{float}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{arydshln}
+
+\usepackage{comment}
+\usepackage[framemethod=TikZ]{mdframed}
+\usepackage{lipsum}
+
+\input{/Users/nychka/Home/Tex/Teaching/ColorsFromR.tex}
+\input{/Users/nychka/Home/Tex/Teaching/ourDefinitions.tex}
+
+\setlength{\textwidth}{5.5in}
+\setlength{\evensidemargin}{0.50in}
+\setlength{\oddsidemargin}{0.50in} 
+\setlength{\textheight}{8.75in}
+\setlength{\topmargin}{0.00in}
+\setlength{\parskip}{.25in}
+\setlength{\parindent}{.25in}
+
+\renewcommand{\baselinestretch}{1.0}
+
+
+
+\begin{document}
+\vspace*{-1in}
+\noindent
+{\LARGE  \bf  \sc  MATH 531  Homework 4  \\
+  }
+%{\large \it Colorado School of Mines}
+\noindent
+{\Large \bf   Generalized least squares and variance estimation  \\ \today} 
+\ \\
+{\color{orange3} \hrule  }
+\ \\
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%PROBLEM 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   Consider a linear model for data as 
+\[  \by = X \beta + \be \]
+where $\by$ is an vector of length $n$ and $X$ is a full rank,
+ $n\times p$ matrix. Assume that $cov(\be) = \Sigma$  ($ n \times n$ is known only up to a constant. 
+ That is we are given  a matrix, $\Omega$, that has full rank, where  $\Sigma = \sigma^2\Omega$ but we don't know the scalar parameter $\sigma^2$. 
+ 
+ Although this may seem a strange setup it is exactly how we think about the OLS model : $\Sigma = \sigma^2 I_n$ with $I_n$ the identity matrix.
+ 
+ Now suppose you create the ``star" model. 
+ $\by^* = \Omega^{-1/2}\by$, $X^* = \Omega^{-1/2}X$, and $\be^* = \Omega^{-1/2}\be$.
+ Here  $\Omega^{-1/2}$ is the symmetric version so we don't have to worry about keeping track of transposes. 
+  \[  \by^* = X^* \beta + \be^* \]
+  
+  Note that in a  (practical) data analysis both  $\by^*$  and $X^*$ can be directly computed from the data without estimating any unknown parameters.  Often $\Omega$ will depend on other parameters that we don't know -- but let's not go there! 
+  \begin{enumerate}
+ \item 
+ \begin{enumerate}
+ \item Explain how to construct $\Omega^{-1/2}$ based on the singular value decomposition of $\Omega$.
+ 
+ 
+ \item Show that  $E( \be^*) =0 $,  $E( \by^*) = X^* \beta $ and  $COV(\be^*) = COV( \by^*) = \sigma^2 I_n $
+ 
+ \item Show that if $\bc^T \beta$ is estimable in the original model it is also estimable in the ``star" model. 
+ 
+ 
+ \end{enumerate}
+ 
+ \item 
+ \begin{enumerate}
+ \item Let $\hat{\beta}$ be the OLS estimate based on the ``star" model. Use the Gauss-Markov theorem to argue the optimality of this estimate. 
+ 
+\item 
+Explain how to use the star model  and some moment conditions to guarantee an unbiased and minimum variance estimate for $\sigma^2$.
+
+BTW: Will the square root of your estimate also be unbiased for $\sigma$ (YES,NO) ?)  
+
+\end{enumerate}
+
+\item Writing the results in terms of the original data --
+ your previous answers are in  the form of the ``star" variables  $\by^*$ and $X^*$. 
+\begin{enumerate}
+\item  Express your estimate of $\beta$ in terms of the original $\by$ and $\bX$. 
+\item  Express your estimate of $\sigma^2$ in terms of the original data and covariates. 
+\item  Is your estimate for $X\hat{\beta}$ based on the  projection of  $\by$ on the column space of $X$?
+ (YES,NO). 
+   
+\end{enumerate}
+
+\item This problem explores the optimality of the estimate of the variance motivated by least squares fitting. 
+The idea is to use Monte Carlo simulation in R and we will focus on just a simple random sample instead of a linear model to make things easier. 
+
+\begin{enumerate}
+\item  Let   $\{ y_i \}$ be a random sample from a $N(\mu, \sigma^2)$. Of course from intro stats we know that $\mu$ is estimated by the sample mean and $\sigma^2$ estimated by the sample average.  We also know that 
+$\frac{(n-1) \hat{\sigma}^2}{\sigma^2}$ will have a  Chi-squared distribution with $n-1$ degrees of freedom. (We will derive more general results later in the course.)  
+
+\bdot Explain how we can also find these estimates  using a simple linear regression model. 
+
+\bdot  Report the variance of  $\hat{\sigma}^2$ 
+
+\item Now consider the estimate for $\sigma$ based on least absolute deviations. 
+
+\[  \hat{\gamma} =  (1/(nC)) \sum_{i=1} ^n | y_i -  \bar{y} |  \]
+and estimate $\sigma^2$ by  squaring this: $\hat{\gamma}^2$.
+
+\bdot Derive the constant  $C$ to make this closer to unbaised  using   $C= E( |Z|)$ where  $Z \sim N(0,1) $. \\ 
+( I think it is $2/\sqrt{2 \pi }$ -- how would you check this?)
+
+\bdot Generate $10^5$ random samples of size n=30, from  a $N(10, (2)^2) $.  For each sample compute the estimate 
+$\hat{\gamma}$  from the Monte Carlo results  determine the bais, variance  and root mean squared error of the estimator $\hat{\gamma}^2$ for $\sigma^2$. 
+
+\bdot Compare your results to the estimator $\hat{\sigma}^2$ -- which is better according to these metrics?
+
+\item Compare your results  using both  $\hat{\gamma}$  and  $ \hat{\sigma}$ as estimators for $\sigma$. 
+
+\item Under what circumstances might you prefer to use $\hat{\gamma}$  as an estimate for $\sigma$?
+
+
+
+
+\end{enumerate}
+
+
+ 
+\end{enumerate}
+%
+\end{document}
+
+
+
+

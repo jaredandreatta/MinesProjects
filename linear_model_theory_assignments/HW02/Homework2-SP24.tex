@@ -1,0 +1,103 @@
+\documentclass[11pt]{article}
+\usepackage{amssymb}
+\usepackage{amsthm,amssymb,amsmath,amsbsy}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{bm}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{enumitem,kantlipsum}
+\pagestyle{plain}
+\newcommand{\V}{\vspace{0.3in}}
+\newcommand{\VV}{\vspace{0.1in}}
+
+\newcommand{\Real}{\mbox{\Bbb R}}
+\newcommand{\Natural}{\mbox{\Bbb N}}
+\newcommand{\Integer}{\mbox{\Bbb Z}}
+
+\newcommand{\ra}{\rightarrow}
+
+%%% Soutir Bandyopadhyay's spacing %%%
+\oddsidemargin -0.25in 
+\textwidth 7in 
+\headheight 0in 
+\textheight 9in 
+\topmargin -0.5in 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[framemethod=TikZ]{mdframed}
+
+% here are a whole bunch of useful macros to make the latexing easier. 
+% also note the handy macros \bex and \eex if you want to get fancy ...
+
+\input{ourDefinitions.tex}
+
+\begin{document}
+%
+%
+\begin{center}
+\begin{tabular}{lcr}
+\textbf{MATH 531} & \hskip0.6in\textbf{Homework 2} & \hskip0.6in\textbf{Spring 2024}\\
+& \hskip0.6in\textbf{(Due: 29th January, Monday)} &
+\end{tabular}
+\end{center}
+%
+%
+\begin{enumerate}
+%
+%
+
+%
+\item 
+Let  $\{\bz_1, \bz_2,\ldots , \bz_k \}$ be a set of $k$ orthonormal vectors in ${\Bbb R}^n$  that span a subspace $\cal W$ and let $Z$ be a matrix formed by taking these as column vectors. 
+\[ Z=  [\bz_1, \bz_2,\ldots , \bz_k  ] \]
+( Note in R this would be the {\tt cbind} function to form the vectors into a matrix. )
+Show that  $Z^T Z = I $ where $I$ is the identity matrix. What is the dimension  of this identity?  (Subsequently  when it is important we will notate the identity matrix as $I_m$ where $m$ refers to the dimension. )
+
+\item Show that   the  trace of the matrix $ZZ^T$ is $k$.  Under what circumstances will $ZZ^T = I$?
+
+\item  
+Define: The {\it projection} of $\by \in {\Bbb R}^n$ onto a subspace $\cal W$ as the vector $\bu$ such that  $\by = \bu + \bv$, $\bu \in \cal W$ and $\bv  \in {\cal W}^\perp $.  
+
+From lecture we know  that if a projection exists it is unique -- so we can talk about  {\it the} projection. 
+
+(This is not exactly how projection is defined in the course reference notes but is how it was presented in class lecture, followed by a proof of existence and uniqueness. )
+
+From Problem (1) define the $n \times n$ matrix  $P=  ZZ^T$. Show that for any $\by$, $\bu = P \by$ is the projection. 
+
+Show that $(I-P) \by$ is the projection onto ${\cal W}^\perp $.
+
+\item Let $X$ be an  $n \times k$ matrix   where the columns are linearly independent. Show that $X^T X$ has full rank ($k$) and show that $P= X (X^T X)^{-1} X^T $ is a projection onto the subspace spanned by the columns of $X$. 
+
+\item Classical treatments of linear algebra tend to present the singular value decomposition (svd) at the end of a course -- if at all. However, it is an extremely useful way to categorize all matrices and hence all linear maps between 
+${\Bbb R}^k $ and ${\Bbb R}^n$.  Let $X$ be any $n \times k $ matrix, then 
+\[ X = U D  V^T \]  with 
+\begin{itemize}
+\item  $U$ an $n \times k $ matrix where the columns form an orthonormal basis ( $U^TU = I_k$) 
+\item  $D$ is a  $k \times k $ diagonal matrix with nonnegative elements (some of the $D$ can be zero and the convention is to sort these in descending order.) 
+\item  $ V$ is an $k \times k $ orthonormal matrix  ($ V^T  V = I _k$) 
+\end{itemize}
+(The proof of this is long and involved and we will just take this result on trust!)
+
+If  $A$ is a square matrix and invertible show  that  $A^{-1} = V D^{-1} U^T $.
+
+Show that  $X^T X$ = $  V D^2 V^T$. 
+
+Based on this previous result explain how to construct a G-inverse for $X^T X$, that is identify a matrix, A, such that
+$X^T X( A )X^T X = X^T X$.
+
+
+\item When was the singular value decomposition invented? If possible identify its inventor(s)? 
+Is it difficult to  compute the SVD of a matrix in R?
+
+\end{enumerate}
+%
+%
+%
+%
+%
+%
+%
+%
+\end{document}

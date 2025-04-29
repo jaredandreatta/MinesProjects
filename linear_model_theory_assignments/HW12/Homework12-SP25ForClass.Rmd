@@ -1,0 +1,345 @@
+---
+title: "HW12 ANOVA decomposition"
+author: "Jared Andreatta"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##  The PVC dataset 
+Loading the small example data set **pvc** from the textbook
+*Linear Models with R*,  Julian Faraway.
+
+```{r}
+load("pvc.rda")
+head( pvc)
+# each combination of resin/operator has two replications
+table( pvc$resin, pvc$operator)
+```
+
+
+About the dataset (from Faraway's R package help file)
+
+**Production of PVC by operator and resin railcar**
+
+Description
+
+Data from an experiment to study factors affecting the production of the plastic PVC, 3 operators used 8 different devices called resin railcars to produce PVC. For each of the 24 combinations, two samples were produced.
+
+
+Dataset contains the following variables
+
+- psize Particle size
+
+- operator Operator number 1, 2 or 3
+
+- resin Resin railcar 1-8
+
+Source
+
+R. Morris and E. Watson (1998) "A comparison of the techniques used to evaluate the measurement process" *Quality Engineering*, 11, 213-219
+ 
+
+For reference the complete (and default) 2-way analysis. Note the use of the ```*``` in the formula equation. 
+
+```{r}
+fullFit<- lm(psize ~ operator*resin, pvc )
+
+ANOVATable<- anova( fullFit)
+ANOVATable
+
+# the complete sums of squares subtracting off the grand mean is
+SSTotal<- sum( (pvc$psize - mean(pvc$psize))^2)
+SSTotal
+
+# compare to 
+sum( ANOVATable[,2])
+```
+
+## Problem 1
+
+- The fields function **stats** is a handy function that will find summary statistics of the columns of a matrix or a data frame 
+E.g. ```stats(pvc)``` in this case the summaries for operator and resin are listed as NA. Why? \
+
+These aren't numerical vectors. Instead, they are factors, or categorical variables.
+
+- For these data compute the 1-way analysis "by hand" (use R basic arithmetic and functions but not **lm** ) for the **resin** factor and the response  **psize**. Specifically under the model: 
+\[ Y_{ik} = \mu +\alpha_i + e_{ik} \] 
+Determine the OLS estimates for the grand mean, $\mu$, and main effects,  $\{ \alpha_i \}$ $i= 1,...,8$ , where the main effects are constrained to sum to 0. \
+
+```{r}
+# Total mean
+mu_hat <- mean(pvc$psize)
+# resin means
+ybar_resin <- tapply(pvc$psize, pvc$resin, mean)
+# Effects
+alpha_hat <- ybar_resin - mu_hat
+
+# Approximately 0
+sum(alpha_hat)  
+
+data.frame(
+  resin = names(alpha_hat),
+  alpha = alpha_hat
+)
+```
+
+- Fit this model using **lm**. Do you get the same results? Which parts are the same and which are different? \
+
+The fitted values, coefficients, and residuals are identical. The difference to note is that resin8 is not accounted for in these coefficients.
+
+
+```{r}
+# sum(alpha)=0 contrast
+options(contrasts = c("contr.sum", "contr.poly"))
+fit <- lm(psize ~ resin, data = pvc)
+summary(fit)$coef
+anova(fit)
+```
+
+- Without using **lm** calculate the F statistic for the null hypothesis that all the $\{ \alpha_i \}$ are zero. Check your answer against the results of using **lm** and the **anova** function. 
+
+```{r}
+# mu
+ybar_all <- mean(pvc$psize)
+
+# resin sample and means
+n_i <- as.numeric(table(pvc$resin))                 
+ybar_i <- tapply(pvc$psize, pvc$resin, mean)      
+
+# Sum of squares between groups
+SSB <- sum( n_i * (ybar_i - ybar_all)^2 )
+# Sum of squared within group
+SSW <- sum( tapply(pvc$psize, pvc$resin, function(x) sum((x - mean(x))^2)) )
+
+# Df's
+dfB <- length(ybar_i) - 1       
+dfW <- length(pvc$psize) - 8   
+
+# Mean squared between/within groups
+MSB <- SSB / dfB
+MSW <- SSW / dfW
+
+# F-stat
+F <- MSB / MSW
+
+# Statistics
+c(SSB=SSB, SSW=SSW, MSB=MSB, MSW=MSW, F=F)
+
+# Sanity check
+fit <- lm(psize ~ resin, data = pvc)
+anova(fit)
+
+```
+
+
+
+## Problem 2 
+
+- Now consider both factors, **resin** and **operator**  and estimate "by hand" the
+parameters in the model 
+\[ Y_{ijk} = \mu +\alpha_i + \beta_j + e_{ijk} \] 
+Here $i$ indexes the 8 resin levels and $j$ indexes the 3 operator levels.
+$\alpha_i$ are the 8 main effects for resin and $\beta_j$ are the 3 main effects for operator. Again assume that both estimates of the main effects are constrained to sum to 0. 
+
+```{r}
+# Grand mean
+mu_hat <- mean(pvc$psize)                 
+
+# resin effects (alpha)
+ybar_resin <- tapply(pvc$psize, pvc$resin,    mean) 
+alpha_hat <- ybar_resin - mu_hat                 
+stopifnot(abs(sum(alpha_hat))  < 1e-12) # sum to 0 constraint
+
+# operator effects (beta)
+ybar_operator <- tapply(pvc$psize, pvc$operator, mean)  
+beta_hat <- ybar_operator  - mu_hat                    
+stopifnot(abs(sum(beta_hat)) < 1e-12)                # sum to 0 constraint
+
+mu_df <- data.frame(parameter = "mu", level = NA, value = mu_hat)
+alpha_df <- data.frame(parameter = "alpha", level = names(alpha_hat), value = alpha_hat)
+beta_df <- data.frame(parameter = "beta", level = names(beta_hat),  value = beta_hat)
+
+mu_df
+alpha_df
+beta_df
+```
+
+- Find the F statistics for testing both for the resin main effects being zero and separately for the operator effects being zero. Compare your computation to the full ANOVA given above in the introduction -- why are they slightly different? 
+
+```{r}
+y <- pvc$psize
+N <- length(y)                 
+
+# Grand mean
+mu <- mean(y)
+
+# resin
+n_i <- table(pvc$resin)                     
+mean_i <- tapply(y, pvc$resin, mean)
+SS_resin <- sum( n_i * (mean_i - mu)^2 )       
+df_resin <- length(mean_i) - 1                 
+MS_resin <- SS_resin / df_resin
+
+# operators
+n_j <- table(pvc$operator)                  
+mean_j <- tapply(y, pvc$operator, mean)
+SS_oper <- sum( n_j * (mean_j - mu)^2 )        
+df_oper <- length(mean_j) - 1                  
+MS_oper <- SS_oper / df_oper
+
+# residuals 
+SST <- sum( (y - mu)^2 )                     
+SS_err <- SST - SS_resin - SS_oper
+df_err <- N - 1 - df_resin - df_oper           
+MS_err <- SS_err / df_err
+
+# F-stats
+F_resin <- MS_resin / MS_err
+F_oper <- MS_oper / MS_err
+
+# Table of stats
+cbind(Df = c(df_resin, df_oper, df_err),
+      "Sum sq" = c(SS_resin, SS_oper, SS_err),
+      "Mean sq" = c(MS_resin, MS_oper, MS_err),
+      "F value"  = c(F_resin,  F_oper,  NA))
+
+# Sanity check
+add_fit <- lm(psize ~ resin + operator, data = pvc,
+              contrasts = list(resin = contr.sum, operator = contr.sum))
+anova(add_fit)
+
+```
+
+- An engineer knows that the resin railcars have an effect but then asks: `What is the relative impact   of different operators  on **psize**  compared to  the resin effect?' What would you tell him? \
+
+According to the ANOVA table, it is clear that operators have statistically significant effects on psize. However, it has considerably less impact than resin railcars. Resin railcars account for around 84% of the variability, while the operator choice accounts for about 6% of the variability.
+
+
+
+
+## Problem 3 
+Now consider the full model. 
+\[ Y_{ijk} = \mu +\alpha_i + \beta_j +  \gamma_{ij} + e_{ijk} \]
+where $\{\gamma_{ij}\}$ are the 24 interaction terms. 
+ 
+
+
+- List the number of constraints on the main effects and interactions needed to give an X matrix that has full rank \
+
+For the full model, we have a total count of 36 parameters: 1 for $\mu$, 8 for $\alpha$, 3 for $\beta$, and 24 for $\gamma$. For an ANOVA with 2 factors, we would only have 24 parameters. Thus, we must impose 12 constraints so that $X$ has full rank.
+
+- Examine the **lm** fit of this full model given above. Which  interactions does the software choose to leave out to create a full rank X matrix. \
+
+As we can see, there are 24 terms accounted for in the lm() fit. The interactions between operator1 and resin1:8 are all dropped, since they are the main-effect dummies created for each resin. Additionally, the operator2 and operator3 interaction terms with resin1 are dropped as well, since they are redundant with the main-effect dummies for the operator variable. Hence, we have 10 omitted interaction terms, so when we combine these with the two constraints where $\sum \alpha=0$ and $\sum \beta=0$, that gives us 12 constraints, which we know will give an X with full rank.
+
+```{r}
+options(contrasts = c("contr.treatment", "contr.poly"))
+fullFit <- lm(psize ~ operator * resin, data = pvc)
+
+coef(fullFit)                 
+```
+
+- Following the definition of an interaction, and with this balanced design for the data,  we have the estimates:
+\[ \hat{\gamma_{ij}} = \overline{Y}_{ij} - 
+\hat{\mu} - \hat{\alpha_i} - \hat{\beta_j}\]
+where $\overline{Y}_{ij}$ is the group mean for resin level $i$ and operator level $j$.
+
+Create a table of 48 rows and with 6 columns: the data, the grand mean,  the resin main effects,the operator main effects,  the interaction effects, and the residuals. Call this ```tablePVC``` and list out the table. (use 
+```\newpage``` to create a separate page for this in your pdf.)
+
+If done correctly, columns 2 through 6 should sum to the first. E.g. ```rowSums(tablePVC[,2:6])``` is equal to  ```tablePVC[,1]```.
+How are the sum of squares of *columns* 2 through 6 ```colSums(tablePVC[,2:6])``` related to the  two way ANOVA table reported by ```anova( fullFit)```
+
+Here is an example of indexing that might help you to fill  out  the table with the estimates. Note you will need to find **alphaHat** and **betaHat** and **muijHat**, the $8\times3$ matrix of group means  to make this code work. 
+
+```
+indexResin<-as.numeric( pvc$resin)
+indexOperator<-as.numeric( pvc$operator)
+vecMeans<- muijHat[ cbind(indexResin, indexOperator)]
+vecGrand<- rep( mean( pvc$psize), 48)
+vecAlpha<- alphaHat[indexResin]
+vecBeta<-  betaHat[indexOperator]
+vecGamma<- vecMeans - vecAlpha - vecBeta - vecGrand
+residual<- pvc$psize - vecMeans 
+``` 
+
+```{r}
+y <- pvc$psize           
+N <- length(y)
+
+# Grand mean
+mu_hat <- mean(y)
+
+# Main effect estimates for alpha and beta
+alpha_hat <- tapply(y, pvc$resin,    mean) - mu_hat   
+beta_hat  <- tapply(y, pvc$operator, mean) - mu_hat  
+
+# Group means
+mu_ij_hat <- with(pvc, tapply(psize, list(resin, operator), mean))
+
+# Code from above
+idxRes <- as.integer(pvc$resin)
+idxOper <- as.integer(pvc$operator)
+vecGrand <- rep(mu_hat, N)
+vecAlpha <- alpha_hat[idxRes]
+vecBeta <- beta_hat[idxOper]
+vecMean <- mu_ij_hat[cbind(idxRes, idxOper)]
+vecGamma <- vecMean - vecGrand - vecAlpha - vecBeta     # interaction piece
+vecResid <- y - vecMean
+
+## PVC Table
+tablePVC <- cbind(
+  psize     = y,
+  grandMean = vecGrand,
+  alphaHat  = vecAlpha,
+  betaHat   = vecBeta,
+  gammaHat  = vecGamma,
+  resid     = vecResid
+)
+
+# Sanity check (it is TRUE)
+all.equal(rowSums(tablePVC[, 2:6]), tablePVC[, 1])
+
+# Printed out table
+print(tablePVC, digits = 4)
+
+# Sums of squares
+ss_cols <- colSums(tablePVC[, 2:6]^2)
+print(ss_cols, digits = 4)
+
+# ANOVA sums of squares
+anova(fullFit)
+
+```
+
+- Is there statistical evidence that there is an interaction effect between resin and operators? \
+
+It's clear to see that, from the ANOVA table, there is no evidence that there is a significant interaction between resin and operators. The F-stat for gammaHat is ~.69 with a p-val of ~.76. Below is a simple calculation for the F-stat of gamma.
+
+```{r}
+
+# SS
+SS_gamma <- ss_cols["gammaHat"]     
+SS_resid <- ss_cols["resid"]       
+
+# DFs
+df_gamma <- (length(alpha_hat) - 1) * (length(beta_hat) - 1)
+df_resid <- N - length(mu_ij_hat)             
+
+# MS
+MS_gamma <- SS_gamma / df_gamma
+MS_resid <- SS_resid / df_resid 
+
+# F-stat for gamma
+F_gamma <- MS_gamma / MS_resid 
+
+F_gamma
+
+```

@@ -1,0 +1,277 @@
+---
+title: "HW 3"
+author: "Jared Andreatta"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: false
+  word_document:
+    toc: false
+editor_options:
+  markdown:
+    wrap: 72
+---
+
+# Problem 1
+
+The null hypotheses for the p-values is that the leading coefficient for
+each variable is 0. Formally, we can write
+
+$$
+H_0: \beta_i = 0
+$$ for $i=1,2,3,4$. What we can inference off of this is how likely that
+the coefficient of each variable is statistically significant (most
+likely not equal to 0). The \textbf{sales, TV}, and \textbf{radio} all
+have negligibly small p-values, meaning that there is a very low
+likelihood of their corresponding $\beta$ is 0, meaning that we can
+reject the null hypothesis with \>99% confidence. The \textbf{newspaper}
+variable, however, has a p-value of 0.8599, meaning that the $\beta$
+corresponding to \textbf{newspaper} is likely 0, therefore we fail to
+reject the null hypothesis that the coefficient estimate is 0.
+
+# Problem 7
+**NOTE:** I will use common linear algebra notation (as seen in MATH531) as it is easier for me to understand and compute this way. \
+
+\textbf{\textit{Proof.}} It is given that this regression is centered around a mean of 0, i.e. $\bar{x}=\bar{y}=0$. First, we define the squared correlation coefficient between $x$ and $y$. In the case of simple linear regression, we have
+
+$$
+\text{Cor}(x,y)^2 = \left( \frac{x^Ty}{\sqrt{x^Tx}\sqrt{y^Ty}} \right)^2 = \frac{(x^Ty)^2}{x^Txy^Ty}
+$$
+Now, we can algebraically simplify the expression for $R^2$ to show that it is simply the squared correlation coefficient. We know that the expression for $R^2$ is 
+
+$$
+R^2 = 1 - \frac{RSS}{TSS}
+$$
+
+which, in linear algebra notation, can be simply written as
+
+$$
+R^2 = 1 - \left( \frac{(y-x\hat{\beta})^T(y-x \hat{\beta})}{y^Ty} \right)
+$$
+
+We can expand the inner product term in the numerator.
+
+
+
+\begin{align*}
+R^2 = 1 - \left( \frac{y^ty - y^Tx\hat{\beta} - (x \hat{\beta})^Ty + (x \hat{\beta})^Tx \hat{\beta}}{y^Ty} \right ) \\
+= 1 - \left( \frac{y^Ty}{y^Ty} - \frac{- y^Tx\hat{\beta} - (x \hat{\beta})^Ty + \hat{\beta}^Tx^Tx \hat{\beta}}{y^Ty} \right ) \\ 
+= \frac{y^Tx\hat{\beta} + (x \hat{\beta})^Ty - \hat{\beta}^Tx^Tx \hat{\beta}}{y^Ty}
+\end{align*}
+
+Note that $y^Tx\hat{\beta} = (x \hat{\beta})^Ty$. They are scalar values, so they are equal to their own transpose. Additionally, we note that since this is the case of simple linear regression, $\hat{\beta}$ is simply a scalar value. Therefore, we have 
+
+$$
+R^2 = \frac{2 \hat{\beta}x^Ty - \hat{\beta}^2x^Tx}{y^Ty}
+$$
+Recall the definition of the OLS estimator (i.e. $\hat{\beta}$):
+
+$$
+\hat{\beta} = \frac{x^Ty}{x^Tx}
+$$
+Using this definition, we can substitute this back into the expression for $R^2$.
+
+\begin{align*}
+R^2 = \frac{2 \left( \frac{x^Ty}{x^Tx} \right) x^Ty - \left( \frac{x^Ty}{x^Tx}\right) ^2x^Tx}{y^Ty} \\
+= \frac{2 \frac{(x^Ty)^2}{x^Tx} -  \frac{(x^Ty)^2}{x^Tx}}{y^Ty} \\
+= \frac{\frac{(x^Ty)^2}{x^Tx}}{y^Ty} \\
+= \frac{(x^Ty)^2}{x^Txy^Ty}
+\end{align*}
+
+Hence, we have shown that 
+
+$$
+R^2 = \frac{(x^Ty)^2}{x^Txy^Ty} = \text{Cor}(x,y)^2
+$$
+
+
+\hfill $\Box$.
+
+
+
+
+
+
+
+
+
+# Problem 8
+
+## a.
+
+### i.
+
+There is a statistically significant relationship between the predictor
+and the response.
+
+### ii.
+
+The horsepower coefficient estimate is -0.157845, meaning that, on
+average, for every increase in 1 HP, we expect a .157845 decrease in
+MPG.
+
+### iii.
+
+The relationship is negative; as horsepower increases, we expect
+decreases in MPG.
+
+### iv.
+
+The estimated MPG of a car with 98 horsepower is 24.4670. The 95%
+confidence interval is [24.46708 23.97308 24.96108] and the 95%
+prediction interval is [24.46708 14.8094 34.12476].
+
+```{r}
+library(ISLR2)
+
+data <- Auto
+
+fit <- lm(mpg ~ horsepower, data=data)
+
+summary(fit)
+
+#iv. 
+est <- coef(fit)[1] + 98 * coef(fit)[2] # Estimating for 98 HP
+print(est)
+
+predict(fit, newdata = data.frame(horsepower = 98), interval="prediction") # Prediction intervals
+predict(fit, newdata = data.frame(horsepower = 98), interval="confidence") # Confidence intervals
+```
+
+## b.
+
+```{r}
+plot(data$horsepower, data$mpg, pch=20, xlab="Horsepower", ylab="MPG", main= "MPG vs. HP")
+abline(coef=coef(fit), lwd=3, col="orange")
+```
+
+## c.
+
+A problem easily noticeable, both from the diagnostic plots and the
+regression plot, is that the linear specification does not quite provide
+the best estimate of the data. Nonlinearity is inferred from the shape
+of the residuals vs fitted scatterplot, and also the general shape of
+the scatterplot of MPG vs. HP, so a possible improvement of the model
+could be to add a quadratic term to better capture that nonlinearity.
+
+```{r}
+par(mfrow=c(2,2))
+plot(fit)
+```
+
+# Problem 9
+
+## a.
+
+```{r}
+pairs(data)
+```
+
+## b.
+
+```{r}
+names(data)
+cor(data[1:8])
+```
+
+## c.
+
+### i.
+
+Yes, there is a statistically significant relationship between the
+response and the predictors.
+
+### ii.
+
+The predictors that have a statistically significant relationship are
+**displacement, weight, year,** and **origin** (and the **Intercept**).
+
+### iii.
+
+The year coefficient suggests that for every increase in year, we expect
+a .751 increase in mpg of the car on average. From this, we can infer
+that newer cars tend to have better gas mileage than older cars.
+
+```{r}
+fit <- lm(mpg ~ .-name, data=data)
+
+summary(fit)
+```
+
+## d.
+
+The Q-Q plot mostly follows along the line trend up until the second
+quantile, where the variance of the standardized residuals start to
+increase, which can also be seen in the residuals vs fitted. This
+indicates that the model provides a weaker fit for cars with high mpg.
+
+There doesn't seem to be any extreme outliers, though it does seem that
+the standard errors seem to be heteroskeadastic.
+
+From the leverage plot, there is clear evidence of an observation with
+extreme leverage.
+
+```{r}
+par(mfrow=c(2,2))
+plot(fit)
+```
+
+# Problem 12
+
+## a.
+
+The coefficient estimate $\hat{\beta}$ is equal when we regress $X$ onto
+$Y$ as when we regress $Y$ onto $X$ when $\|X\|^2=\|Y\|^2$. We can use equation (3.38) to show
+this. Note that I will use linear algebra notation, as it is easier to
+read (in my opinion). The estimate for $\beta$ when we regress $X$ onto
+$Y$ is
+
+$$
+\hat{\beta} = (X^TX)^{-1}X^TY
+$$ 
+
+Equivalently, when we regress $Y$ onto $X$, the estimate is
+
+$$
+\hat{\beta} = (Y^TY)^{-1}X^TY
+$$ 
+
+Assuming that $X^TY \neq 0$, we set these equal to each other and find
+
+\begin{align*}
+(Y^TY)^{-1}X^TY = (X^TX)^{-1}X^TY \implies \\
+Y^TY = X^TX
+\end{align*}
+
+## b.
+
+```{r}
+# Simplest case. Both X and Y are 100x1 random vectors with mean 0 and variance sigma^2. X!=Y
+set.seed(25)
+
+X <- rnorm(100)
+Y <- rnorm(100)
+
+fitX <- lm(Y ~ X+0)
+fitY <- lm(X ~ Y+0)
+
+coef(fitX)
+coef(fitY)
+```
+## c.
+
+```{r}
+# Simplest Case: X is a randon 100x1 vector with mean 0 and variance sigma^2. In this case, Y=X.
+set.seed(100)
+
+X <- rnorm(100)
+Y <- X
+
+fitX <- lm(Y ~ X+0)
+fitY <- lm(X ~ Y+0)
+
+coef(fitX)
+coef(fitY)
+```
+
+

@@ -1,0 +1,85 @@
+\documentclass[10pt]{report}
+\nofiles
+\usepackage{amsmath}
+\usepackage{graphicx,psfrag,epsf}
+\usepackage{enumerate}
+%\usepackage{natbib}
+\usepackage{float}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{arydshln}
+
+\usepackage{comment}
+\usepackage[framemethod=TikZ]{mdframed}
+\usepackage{lipsum}
+
+\input{/Users/nychka/Home/Tex/Teaching/ColorsFromR.tex}
+\input{/Users/nychka/Home/Tex/Teaching/ourDefinitions.tex}
+
+\setlength{\textwidth}{5.5in}
+\setlength{\evensidemargin}{0.50in}
+\setlength{\oddsidemargin}{0.50in} 
+\setlength{\textheight}{8.75in}
+\setlength{\topmargin}{0.00in}
+\setlength{\parskip}{.25in}
+\setlength{\parindent}{.25in}
+
+\renewcommand{\baselinestretch}{1.0}
+
+
+
+\begin{document}
+\vspace*{-1in}
+\noindent
+{\LARGE  \bf  \sc  MATH 531  Homework 6  \\
+  }
+%{\large \it Colorado School of Mines}
+\noindent
+{\Large \bf   Fisher information  \\ \today} 
+\ \\
+{\color{orange3} \hrule  }
+\ \\
+Each subsection counts for 10 points  -- 50 points total and the extra credit counts for 5.  
+\begin{enumerate}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%PROBLEM 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\item  
+ Assume a linear model 
+\[  \by = X \beta + \be \]
+where $\by$ is an vector of length $n$ and $X$ is a full rank,
+ $n\times p$ matrix. $\be_i$ are independent $N(0,\sigma^2\Omega)$. Also suppose that $\beta_T$ is ``true" value for $\beta$ and $\hat \beta$ the Generalized Least Squares (GLS) /MLE estimate and $\hat{\sigma}$ the MLE for $\sigma$. Here $\Omega$ is a known correlation matrix. 
+
+\begin{enumerate}
+ \item Identify the formulas for the MLEs $\hat \beta$ and  $\hat{\sigma}_{MLE}$.
+ \item Derive the Fisher information for this model when evaluated at the true values of $\beta$ and $\sigma^2$.
+ (You should reparametrize $\sigma^2$ as $\omega$ as in the lectures to make derivatives easier. )
+ 
+ \item Do the GLS estimates for $\beta$ have a covariance matrix that achieves the Cramer-Rao lower bound (
+  the inverse Fisher information matrix)?
+ \item The  GLS estimate for $\sigma^2$  based on previous homework differs slightly from the MLE but it is unbiased. 
+ \[ \hat{\sigma}^2_{GLS} =  \frac{1}{(n-p)} (\by - X\hat{\beta})^T \Omega^{-1} (\by - X\hat{\beta}) \] 
+ and has variance 
+$ \frac{2\sigma^4}{(n-p)}$
+ 
+ Show that that the variance of this estimate achieves the Cramer-Rao lower bound in the limit as $n \rightarrow \infty$.
+ \end{enumerate}
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%PROBLEM 2
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\item 
+ Now supposed that $\Omega$ above depends on an additional statistical parameter, say $\Omega(\alpha)$. 
+ (This is common in models for spatial and time series data.)
+ Derive the Fisher Information for this extended model. Explain why finding the GLS estimate in this case is problematic.   
+
+ \end{enumerate}
+ 
+\end{document}
+
+
+
+

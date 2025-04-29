@@ -1,0 +1,266 @@
+---
+title: "Homework 4"
+author: "Jared Andreatta"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document:
+     toc: false
+     number_sections: false
+---
+
+
+
+# Problem 3
+
+## a.
+
+
+## b.
+```{r}
+gpa <- 4.0
+iq <- 110
+pred <- 50 + 20*gpa +.07*iq + 35 + .01 * iq * gpa - 10 * gpa
+cat("Predicted salary: $", pred, "thousand")
+```
+
+## c. 
+False. The magnitude of the coefficient is not particularly useful in consideration of its statistical significance, especially for larger values of predictors, like \textbf{GPA*IQ}. It's more helpful to conduct an actual hypothesis test to determine the probability of the coefficient being equal to 0.
+
+# Problem 10
+
+## a.
+
+```{r}
+library(ISLR2)
+
+data("Carseats")
+df <- Carseats
+head(df)
+
+
+lm.fit <- lm(Sales ~ Price + Urban + US, data=df)
+summary(lm.fit)
+confint(lm.fit)
+```
+## b. 
+Price - For a \$1 increase in price, we expect a ~54 decrease in unit sales for a store, on average.
+Urban - If the store is in an Urban neighborhood, we expect a ~22 decrease in unit sales for a store, on average. However, it is important to note that this coefficient has a very small t-statistic and a very large p-value, indicating that it is most likely not statistically significant to this model.
+US - For a store that is in the US, we expect the store to sell ~1201 more units than a store not in the US, on average.
+
+## c. 
+
+$$
+\widehat{Sales} = 13.043 - .054*Price -.022*Urban + 1.201 * US
+$$
+
+where \textbf{Urban}, \textbf{US} are binary indicator variables.
+
+## d. 
+We can reject the null hypothesis for \textbf{Price} and \textbf{US}, but not \textbf{Urban}.
+
+## e. 
+```{r}
+lm.fit2 <- lm(Sales ~ Price + US, data=df)
+summary(lm.fit2)
+```
+## f.
+According to the ANOVA table, adding the \textbf{Urban} variable to the regression has little to no effect on the fit of the model, which is indicated by the F-statistic. Additionally, the adjusted $R^2$ remain mostly the same, which means that the explained variance of the models is mostly unchanged after adding the predictor.
+```{r}
+anova(lm.fit,lm.fit2)
+```
+
+## g. 
+
+```{r}
+confint(lm.fit2)
+```
+
+## f.
+There is no particularly strong evidence supporting outliers in the dataset, however, based off of the leverage plot, there may be presence of a high-leverage point.
+```{r}
+par(mfrow = c(2, 2))
+plot(lm.fit2)
+```
+
+# Problem 13
+
+## a, b, and c.
+$y$ has a length of 100, $\beta_0=-1$, and $\beta_1=.5$.
+```{r}
+set.seed(1)
+
+# a.
+x <- rnorm(100,0,1)
+
+# b.
+eps <- rnorm(100,0,sqrt(.25))
+
+# c. 
+y = -1 + .5*x + eps
+```
+
+
+## d.
+Based off of the plot, there is a positive linear relationship between $x$ and $y$.
+```{r}
+plot(x,y,pch=20,col="orange")
+```
+## e.
+The approximated hat values are very close to the true values.
+```{r}
+fit_sim <- lm(y~x)
+summary(fit_sim)
+coef(fit_sim)
+```
+```{r}
+plot(x,y,pch=20,col="orange")
+abline(-1,.5, col="lightblue", lwd=2)
+abline(fit_sim, col="magenta", lwd=2)
+legend("bottomright",
+       legend=c("True Line", "Fitted Line"),
+       col=c("lightblue","magenta"),
+       lwd=2)
+```
+## g.
+After adding the quadratic term, we can see directly that the quadratic term is (likely) not statistically significant to the model. The adjusted $R^2$ value rises nominally from adding the quadratic term, and the anova table shows little evidence of the new term having any significant effect on the model.
+```{r}
+fit_quad <- lm(y ~ poly(x,2))
+summary(fit_quad)
+anova(fit_sim, fit_quad)
+```
+## h.
+After we redo the process with a lower variance ($\epsilon \sim N(0,0.1)$), we can see that there is a significant improvement in the amount of variance explained by the model compared to the model with higher variance; the previous model had an adjusted $R^2$ value of approximately .46, while the lower variance model has a value of .76.
+```{r}
+x <- rnorm(100,0,1)
+eps <- rnorm(100,0,sqrt(.1))
+y = -1 + .5*x + eps
+
+plot(x, y, pch=20, col="orange")
+
+fit_sim2 <- lm(y ~ x)
+summary(fit_sim2)
+
+plot(x,y,pch=20,col="orange", main="Model with Lower Variance")
+abline(-1,.5, col="lightblue", lwd=2)
+abline(fit_sim2, col="magenta", lwd=2)
+legend("bottomright",
+       legend=c("True Line", "Fitted Line"),
+       col=c("lightblue","magenta"),
+       lwd=2)
+```
+## i.
+As we can see, the fitted regression line deviates from the true regression line, both in the intercept and the slope, which can be seen in the chart and in the regression results. Additionally, the $R^2$ value drops significantly, which is to be expected, as the data is more noisy for this model.
+```{r}
+x <- rnorm(100,0,1)
+eps <- rnorm(100,0,1)
+y = -1 + .5*x + eps
+
+plot(x, y, pch=20, col="orange")
+
+fit_sim3 <- lm(y ~ x)
+summary(fit_sim3)
+
+plot(x,y,pch=20,col="orange", main="Model with Higher Variance")
+abline(-1,.5, col="lightblue", lwd=2)
+abline(fit_sim3, col="magenta", lwd=2)
+legend("bottomright",
+       legend=c("True Line", "Fitted Line"),
+       col=c("lightblue","magenta"),
+       lwd=2)
+```
+## j.
+The 95% confidence set significantly tightens for the reduced variance models, while the model with increased variance produces a much wider confidence set. The noisier the data becomes, the the estimates of the parameters become less confident and the confidence intervals widen.
+```{r}
+confint(fit_sim) # Original
+confint(fit_sim2) # Less noisy
+confint(fit_sim3) # More noisy
+```
+
+# Problem 14
+
+## a.
+
+$$
+Y = 2+2x_1 + 0.3x_2 + \epsilon
+$$
+where $\epsilon \sim N(0,1)$. The coefficients are $\beta_0=2$, $\beta_1=2$, and $\beta_2=0.3$
+```{r}
+set.seed(1)
+x1 <- runif(100)
+x2 <- .5 * x1 + rnorm(100) /10
+y <- 2 + 2*x1 + .3*x2 + rnorm(100)
+```
+
+## b.
+$x_1$ and $x_2$ have a Pearson correlation coefficient of 0.835.
+```{r}
+cor(x1,x2)
+plot(x1,x2)
+```
+## c.
+$\hat{\beta}_0=2.1305$, $\hat{\beta}_1=1.4396$, and $\hat{\beta}_2=1.0097$. The first two coefficients are relatively close to their true values, but this is not true for $\hat{\beta}_2$. We can reject the null hypothesis for $\beta_1$, but we fail to reject for $\beta_2$.
+```{r}
+yhat <- lm(y ~ x1+x2)
+summary(yhat)
+```
+## d.
+The estimate for $\beta_1$ is much closer to the true value and is significant on the >99.9% level, with the same being true for the intercept. We can reject the null hypothesis that $\beta_1=0$.
+```{r}
+yhat2 <- lm(y~x1)
+summary(yhat2)
+```
+## e.
+The results are similar as above. We can reject the null hypothesis again for $\beta_1$.
+```{r}
+yhat3 <- lm(y~x2)
+summary(yhat3)
+```
+## f.
+These regressions do not produce conflicting results. In the model where the coefficients are jointly estimated for $x_1$ and $x_2$, the estimate for $x_2$ is not significant. Yet, when we estimate the coefficients for these variables separately, they are both significant. While these results do not necessarily conflict, they arise questions about other problems, such as multicollinearity. This makes sense since these variables are highly correlated and $x_2$ is distributed dependently on $x_1$.
+
+## g. 
+In the first model, there is strong evidence that the new point is a high-leverage point, which is indicated in the bottom right leverage plot for the diagnostic. For the $x_1$ model, it seems to be an outlier, whereas for the $x_2$ model, there doesn't seem to be sufficiently strong evidence to support that it is an outlier or a high-leverage point.
+```{r}
+x1 <-c(x1, 0.1)
+x2 <-c(x2, 0.8)
+y <-c(y, 6)
+
+yhat <- lm(y~x1+x2)
+yhat2 <- lm(y~x1)
+yhat3 <- lm(y~x2)
+
+summary(yhat)
+summary(yhat2)
+summary(yhat3)
+
+par(mfrow=c(2,2))
+plot(yhat)
+
+par(mfrow=c(2,2))
+plot(yhat2)
+
+par(mfrow=c(2,2))
+plot(yhat3)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

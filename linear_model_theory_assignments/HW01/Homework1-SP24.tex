@@ -1,0 +1,83 @@
+\documentclass[11pt]{article}
+\usepackage{amssymb}
+\usepackage{amsthm,amssymb,amsmath,amsbsy}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{bm}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{enumitem,kantlipsum}
+\pagestyle{plain}
+\newcommand{\V}{\vspace{0.3in}}
+\newcommand{\VV}{\vspace{0.1in}}
+
+\newcommand{\Real}{\mbox{\Bbb R}}
+\newcommand{\Natural}{\mbox{\Bbb N}}
+\newcommand{\Integer}{\mbox{\Bbb Z}}
+
+\newcommand{\ra}{\rightarrow}
+
+%%% Soutir Bandyopadhyay's spacing %%%
+\oddsidemargin -0.25in 
+\textwidth 7in 
+\headheight 0in 
+\textheight 9in 
+\topmargin -0.5in 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[framemethod=TikZ]{mdframed}
+
+% here are a whole bunch of useful macros to make the latexing easier. 
+% also note the handy macros \bex and \eex if you want to get fancy ...
+
+\input{ourDefinitions.tex}
+
+\begin{document}
+%
+%
+
+ { \large \textbf{MATH 531}  Homework 1  Spring 2025 }\\
+%
+%
+\begin{enumerate}
+%
+%
+
+%
+\item 
+Let  $\{\bx_1, \bx_2,\ldots , \bx_k \}$ be a set of $k$ orthogonal vectors in $\R^n$. That is $\bx_i^T \bx_j = 0$ for all $i\ne j$. Show that this set is linearly independent when  $k\le n$. Also explain why this problem does not make sense when $k >  n$ !
+
+%
+%
+\item Suppose ${\cal V}_{n} \subset \R^n$ is a vector space. Prove the following results.
+%
+%
+\begin{enumerate}
+\item If  $\bm{x}\in {\cal V}_{n}$ and $\bm{x}\perp {\cal V}_{n}$ then $\bm{x}=\bm{0}$.
+\item ${\cal V}_{n}^{\perp}=\{\bm{x}:\bm{x}\perp {\cal V}_{n}\}$ is a vector space.
+\end{enumerate}
+
+\item Let $\{\bm{x}_{1},\ldots,\bm{x}_{k}\}$ be a basis of a vector space $\mathcal{W}$. Then show that $\bm{y} \in \mathcal{W}^\perp$ if and only if  (aka iff) $\bm{y}\perp \bm{x}_{i},\ i=1,2,\ldots,k$.
+%
+%
+\item Recall the Cauchy-Schwartz inequality  for two vectors , $\bx$ and $\by$  in $\R^n$
+\[  | \bx^T \by |  \le \| \bx \| \| \by \| \]
+use this inequality to show that the sample correlation coefficient between two data vectors is always in the range  $[-1, 1]$
+
+\item Recall the projection of a vector $\by$ onto $\bx$ is given by  $\hat{\by}= \beta \bx$ with $\beta = (\bx^T \by)/ (\bx^T \b)$
+Using the fact that $\| \by - \hat{\by} \| \ge 0 $ for all $\bx$ and $\by$ prove the Cauchy-Schwartz inequality 
+
+\item Extra Credit  Who were Cauchy and Schwarz in the equality given in the previous problem?  If you could go to dinner with either one who would you choose?
+
+
+\end{enumerate}
+%
+%
+%
+%
+%
+%
+%
+%
+\end{document}

@@ -1,0 +1,173 @@
+---
+title: "R Lab 6"
+author: "Jared Andreatta"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document:
+     toc: false
+---
+
+# Section 6.5.2 (Ridge)
+
+We use the \textbf{glmnet} library to fit LASSO and Ridge models
+
+```{r}
+library(ISLR2)
+library(glmnet)
+
+Hitters <- na.omit(Hitters)
+
+# Here model.matrix produces a matrix corresponding to all 19 predictors and 
+# transforms qualitative predictors into dummies.
+x <- model.matrix(Salary ~ ., Hitters)[,-1]
+y <- Hitters$Salary
+nrow(x) 
+length(y)
+# Ridge Model
+# NOTE: alpha=0 is ridge, alpha=1 is LASSO
+
+# Here, we use a grid of values for lambda from 10^10 down to 10^-2
+ridge.mod <-glmnet(x, y, alpha = 0, lambda = grid) #glmnet also auto standardizes
+
+# Dimension of coefficient matrix
+dim(coef(ridge.mod))
+
+# Here, lambda=11498, so the coefficients become pretty small
+ridge.mod$lambda[50] # Middle lambda val
+coef(ridge.mod)[, 50] # Corresponding coefs for ridge model
+sqrt(sum(coef(ridge.mod)[-1, 50]^2))
+
+# For lambda=705
+ridge.mod$lambda[60]
+coef(ridge.mod)[, 60]
+sqrt(sum(coef(ridge.mod)[-1, 60]^2)) # Norm is much larger for this lambda
+
+# Use predict to obtain coefficients for fixed beta
+predict(ridge.mod, s = 50, type = "coefficients")[1:20, ]
+
+# Splitting training/testing data
+set.seed(1)
+train <-sample(1:nrow(x), nrow(x) / 2)
+test <- (-train)
+y.test <- y[test]
+
+# Evaluating on training data
+ridge.mod <-glmnet(x[train, ], y[train], alpha = 0,
+ lambda = grid, thresh = 1e-12)
+ridge.pred <-predict(ridge.mod, s = 4, newx = x[test, ]) # Use newx to predict on test set (and lambda=4)
+mean((ridge.pred- y.test)^2) # MSE
+
+# MSE for intercept model
+mean((mean(y[train])- y.test)^2)
+
+# Predictions for large lambda val
+ridge.pred <-predict(ridge.mod, s = 1e10, newx = x[test, ])
+mean((ridge.pred- y.test)^2) # Much higher MSE than lambda=4
+
+# Comparing with OLS model
+ridge.pred <-predict(ridge.mod, s = 0, newx = x[test, ],
+ exact = T, x = x[train, ], y = y[train]) # LS estimate
+mean((ridge.pred- y.test)^2) # LS MSE
+
+lm(y ~ x, subset = train)
+predict(ridge.mod, s = 0, exact = T, type = "coefficients",
+x = x[train, ], y = y[train])[1:20, ] # This estimates the same as the lm() function
+
+### CROSS-VALIDATION ###
+# We can use the built in cv.glmnet() to perform cv to choose optimal lambda
+set.seed(1)
+cv.out <-cv.glmnet(x[train, ], y[train], alpha = 0)
+plot(cv.out)
+bestlam <- cv.out$lambda.min # Lambda val that minimizes cv error
+bestlam
+
+# Redoing ridge regression with best lambda val
+ridge.pred <-predict(ridge.mod, s = bestlam,
+ newx = x[test, ])
+mean((ridge.pred- y.test)^2) # Best MSE
+
+# Optimal ridge model
+out <-glmnet(x, y, alpha = 0)
+predict(out, type = "coefficients", s = bestlam)[1:20, ] 
+```
+# Section 6.5.2 (LASSO)
+
+```{r}
+# Lasso model with alpha=1
+lasso.mod <-glmnet(x[train, ], y[train], alpha = 1,
+ lambda = grid)
+plot(lasso.mod)
+
+# We use CV again to determine optimal lambda
+set.seed(1)
+cv.out <-cv.glmnet(x[train, ], y[train], alpha = 1)
+plot(cv.out)
+bestlam <- cv.out$lambda.min
+lasso.pred <-predict(lasso.mod, s = bestlam,
+ newx = x[test, ])
+mean((lasso.pred- y.test)^2) # Lower than MSE for null and LS models
+
+# Predictions with best lambda
+bestlam
+out <-glmnet(x, y, alpha = 1, lambda = grid)
+lasso.coef <-predict(out, type = "coefficients",
+ s = bestlam)[1:20, ]
+lasso.coef # LASSO model with best lambda omly chooses 11 variables
+```
+
+# Section 6.5.3 (Principal Component Regression)
+
+```{r}
+# pls library contains pcr regression package
+library(pls)
+set.seed(2)
+
+# scale=TRUE standardizes predictors, validation="CV" uses CV for every possible
+# value of M
+pcr.fit <-pcr(Salary ~ ., data = Hitters, scale = TRUE,
+ validation = "CV")
+# Note that summary returns RMSE, so we must square to get MSE
+summary(pcr.fit)
+
+# val.type="MSEP" plots CV MSE to be plotted
+validationplot(pcr.fit, val.type="MSEP")
+
+# Run PCR on training data and validate on test set
+# Train
+set.seed(1)
+pcr.fit <-pcr(Salary ~ ., data = Hitters, subset = train,
+ scale = TRUE, validation = "CV")
+validationplot(pcr.fit, val.type = "MSEP") # Lowest CV error is at M=5
+
+# Test
+pcr.pred <-predict(pcr.fit, x[test, ], ncomp = 5) # Predicting on test set
+mean((pcr.pred- y.test)^2)
+
+pcr.fit <-pcr(y ~ x, scale = TRUE, ncomp = 5)
+summary(pcr.fit)
+```
+
+# Section 6.5.3 (Partial Least Squares)
+
+```{r}
+set.seed(1)
+# Fitting PLS model
+pls.fit <-plsr(Salary ~ ., data = Hitters, subset = train, scale= TRUE, 
+              validation = "CV")
+summary(pls.fit)
+
+validationplot(pls.fit, val.type = "MSEP")
+
+# CV error minimized when M=1. Now predict on test set
+pls.pred <-predict(pls.fit, x[test, ], ncomp = 1)
+mean((pls.pred- y.test)^2)
+
+# Now fit on whole dataset
+pls.fit <-plsr(Salary ~ ., data = Hitters, scale = TRUE,
+ ncomp = 1)
+summary(pls.fit)
+```
+
+
+
+

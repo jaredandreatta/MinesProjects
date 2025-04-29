@@ -1,0 +1,189 @@
+---
+title: "MATH560 HW 1"
+author: "Jared Andreatta"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    df_print: paged
+---
+
+# Problem 1
+
+a.  In this problem, we should use a flexible method. With the presence of a large sample size of data, flexible methods are better able to capture the patterns in the data.
+
+b.  For this, it would be better to use an inflexible method. Flexible methods are prone to overfitting on small sample sizes where n\<\<p.
+
+c.  Flexible methods are better for nonlinear data. These methods are better able to capture complex nonlinear patterns without imposing a strict structure on them.
+
+d.  Inflexible methods are better for data with large variance. The restrictions of the model would prevent overfitting on noise better than flexible models could.
+
+# Problem 2
+
+a.  n = observations for top 500 firms, p = profit, \# employees, CEO salary, industry
+
+This is a regression problem, as the response variable is continuous. We are more concerned with inference since we want to know what drives these factors.
+
+b.  n = 20 observations of similar products, p = 1/0 success/failure, price, marketing budget, competitor price, 10 other vars
+
+This is a classification problem, since we are trying to predict a binary, or qualitative, response. We are converned with prediction, as we want to predict whether our product would be a success.
+
+c.  n = 52 observations of weekly data in 2012, p = % change in USD/EURO, % change in US market, % change in British market, % change in German market.
+
+This is a regression problem, since we are concerned with predicting a continuous value. We are concerned with prediction, since we want to predict the % change.
+
+# Problem 5
+
+The biggest advantage that flexible methods have over inflexible methods is that they are able to capture more complex patterns in data, thus they are often able to offer better predictive accuracy over inflexible methods, since inflexible methods impose restrictions on the structure of the model. The disadvantage of flexible methods is the lack of interpretability; these types of methods can be somewhat of a "black box", since they are not as interpretable. 
+
+In studies where we are concerned with predictive accuracy with a large sample size, flexible methods may be preferred. In a study where we are concerned with inference with smaller sample sizes, parametric methods might be preferred.
+
+# Problem 6
+
+Parametric approaches are more strict: it uses the data to estimate parameters according to a specific structure of the model. Nonparametric approaches do not make any assumptions about the functional form of the function. Instead, they seek to estimate a smooth function that is the best fit of the given data points.
+
+Parametric approaches have a few advantages over nonparametric methods. First, they perform better on small sample sizes. Nonparametric methods are prone to overfitting on the noise of the data when the sample size is small and the estimate of the variance is poor, whereas parametric methods can generalize better off of a small sample size. The second advantage is for the sake of inference. The black-box nature of nonparametric methods can be quite difficult to inference off of. However, since parametric models estimate a set of parameters for a model, it is easy for the analyst to statistically inference which variables have effect on other variables.
+
+# Problem 8
+
+```{r}
+# a
+college <- read.csv("College.csv")
+
+# b
+rownames(college) <- college[, 1]
+college <- college[, -1]
+View(college)
+
+# c
+attach(college)
+
+# i 
+summary(college)
+
+# ii
+college$Private <- as.numeric(college$Private=="Yes")
+pairs(college[,1:10])
+
+# iii
+boxplot(Outstate~Private, data=college,
+        varwidth=TRUE,
+        col=c("skyblue","orange"),
+        main="Outstate vs Private")
+
+# iv
+
+Elite <- rep("No", nrow(college))
+Elite[college$Top10perc > 50] <- "Yes" 
+Elite <- as.factor(Elite)
+college <- data.frame(college, Elite)
+
+summary(college) # 78 Universities
+boxplot(Outstate~Elite, data=college,
+        varwidth=TRUE,
+        col=c("skyblue","orange"),
+        main="Outstate vs elite")
+
+# v
+# Divide the plotting window into 2 rows and 2 columns
+par(mfrow = c(2, 2))
+
+# Outstate tuition
+hist(college$Outstate, breaks = 15, 
+     col = "skyblue", 
+     main = "Histogram of Outstate Tuition", 
+     xlab = "Outstate Tuition")
+
+# R&B costs
+hist(college$Room.Board, breaks = 20, 
+     col = "orange", 
+     main = "Histogram of Room & Board", 
+     xlab = "Room & Board")
+
+# FT Undergrads
+hist(college$F.Undergrad, breaks = 10, 
+     col = "gray", 
+     main = "Histogram of Full-Time Undergrads", 
+     xlab = "Number of Students")
+
+# Expenditure
+hist(college$Expend, breaks = 25, 
+     col = "pink", 
+     main = "Histogram of Expenditures", 
+     xlab = "Expenditures")
+
+```
+
+# Problem 8 part vi
+
+Here, I will do some extra data analysis and visualization.
+
+### Acceptance rate by prestige.
+I made another variable to quantify acceptance rate for each college by dividing number of applicants accepted divided by number of applicants. As we can see, "elite" schools clearly have a lower acceptance rate with a mean of ~50%. It also has much more variability: it can get lower than 20% acceptance rate, but it can also have higher than an 80% acceptance rate, whereas the middle 50% of the non-elite schools seem to be closely centered around the mean, although there is a greater presence of outliers that have low acceptance rates.
+
+```{r}
+acc_ratio <- Accept/Apps # Acceptance rate
+
+boxplot(acc_ratio~Elite, data=college,
+        varwidth=TRUE,
+        col=c("skyblue","orange"),
+        main="Acceptance Rate vs Elite")
+
+```
+
+### Distribution of costs
+
+First, I plotted the distribution of cost-related variables against the assumed normal distribution. At first sight, there seems to be a degree of negative skew for each variable, with "fat tails" on the right. I also plotted for the total costs, which is the cost of everything aggregated together, which followed a similar distribution shape as the other variables. This suggests that most of the colleges have lower costs, but there are a handful of expensive colleges that skew the mean significantly in terms of costs. 
+
+```{r}
+library(ggplot2)
+library(ggExtra)
+
+par(mfrow = c(2, 2))
+
+# Outstate tuition
+ggplot(college, aes(x = Outstate)) +
+  geom_histogram(aes(y = ..density..), bins = 50, fill = "skyblue", color = "black", alpha = 0.7) +
+  stat_function(fun = dnorm, 
+                args = list(mean = mean(Outstate, na.rm = TRUE), 
+                            sd = sd(Outstate, na.rm = TRUE)), 
+                color = "orange", linewidth = 1.2) +
+  geom_vline(xintercept = mean(Outstate), color="purple", linetype="longdash", linewidth=1.5)
+
+# R&B costs
+ggplot(college, aes(x = Room.Board)) +
+  geom_histogram(aes(y = ..density..), bins = 50, fill = "skyblue", color = "black", alpha = 0.7) +
+  stat_function(fun = dnorm, 
+                args = list(mean = mean(Room.Board, na.rm = TRUE), 
+                            sd = sd(Room.Board, na.rm = TRUE)), 
+                color = "orange", linewidth = 1.2)  +
+  geom_vline(xintercept = mean(Room.Board), color="purple", linetype="longdash", linewidth=1.5)
+
+# Book Costs
+ggplot(college, aes(x = Books)) +
+  geom_histogram(aes(y = ..density..), bins = 50, fill = "skyblue", color = "black", alpha = 0.7) +
+  stat_function(fun = dnorm, 
+                args = list(mean = mean(Books, na.rm = TRUE), 
+                            sd = sd(Books, na.rm = TRUE)), 
+                color = "orange", linewidth = 1.2)  +
+  geom_vline(xintercept = mean(Books), color="purple", linetype="longdash", linewidth=1.5)
+
+# Personal spending
+ggplot(college, aes(x = Personal)) +
+  geom_histogram(aes(y = ..density..), bins = 50, fill = "skyblue", color = "black", alpha = 0.7) +
+  stat_function(fun = dnorm, 
+                args = list(mean = mean(Personal, na.rm = TRUE), 
+                            sd = sd(Personal, na.rm = TRUE)), 
+                color = "orange", linewidth = 1.2)  +
+  geom_vline(xintercept = mean(Personal), color="purple", linetype="longdash", linewidth=1.5)
+
+# Total Costs
+Total.Costs <- Outstate+Room.Board+Books+Personal
+ggplot(college, aes(x = Total.Costs)) +
+  geom_histogram(aes(y = ..density..), bins = 50, fill = "skyblue", color = "black", alpha = 0.7) +
+  stat_function(fun = dnorm, 
+                args = list(mean = mean(Total.Costs, na.rm = TRUE), 
+                            sd = sd(Total.Costs, na.rm = TRUE)), 
+                color = "orange", linewidth = 1.2)  +
+  geom_vline(xintercept = mean(Total.Costs), color="purple", linetype="longdash", linewidth=1.5)
+
+```

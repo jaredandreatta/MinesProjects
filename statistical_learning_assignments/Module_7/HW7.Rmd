@@ -1,0 +1,287 @@
+---
+title: "HW 7"
+author: "Jared Andreatta (According to Canvas I'm the only one in my group?)"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document:
+     toc: false
+---
+
+
+# Problem 3
+
+```{r}
+beta_1 <- 1
+beta_0 <- 1
+beta_2 <- -2
+X <- seq(from=-2,to=2,by=1)
+
+b_1 <- X
+b_2 <- (X-1)^2 * ifelse(X >= 1, 1, 0)
+
+Y = beta_0 + beta_1 * b_1 + beta_2 *b_2
+
+plot(X,Y,type = "line")
+```
+
+
+# Problem 4
+
+```{r}
+X <- seq(-2, 6, by = 1)
+
+b_1 <- ifelse(0 <= X & X <= 2, 1, 0) - (X - 1) * ifelse(1 <= X & X <= 2, 1, 0)
+b_2 <- (X - 3) * ifelse(3 <= X & X <= 4, 1, 0) + ifelse(4 <= X & X <= 5, 1, 0)
+
+b <- cbind(1, b_1, b_2)
+beta <- c(1, 1, 3)
+
+Y <- b %*% beta  
+
+plot(X, Y, type = "l")  
+```
+
+# Problem 6
+
+## a. 
+According to CV errors, the optimal degree is 6. However, according to the ANOVA table, the optimal level is 4, which is indicated by the insignificant p-values after d=4.
+```{r, warning=FALSE}
+library(ISLR2)
+library(ggplot2)
+library(boot)
+set.seed(11)
+
+### CV ###
+cv.errors <- numeric(10)
+
+for (d in 1:10){
+  fit <- glm(wage~poly(age,d,raw=TRUE), data=Wage)
+  cv.errors[d] <- cv.glm(Wage, fit, K=10)$delta[1]
+}
+
+opt.degree <- which.min(cv.errors)
+opt.degree
+print(cv.errors)
+
+### ANOVA ###
+anova.fits <- lapply(1:10, function(i) lm(wage ~ poly(age, i, raw=TRUE), data = Wage))
+anova.table <- do.call(anova, anova.fits)
+print(anova.table)
+
+### Plotting ###
+ggplot(Wage, aes(age, wage)) +
+  geom_point(alpha = 0.2, color = "grey40") +
+  stat_smooth(aes(color = "Degree 4"),
+              method  = "lm",
+              formula = y ~ poly(x, 4),
+              se      = FALSE,
+              size    = 1) +
+
+  stat_smooth(aes(color = "Degree 6"),
+              method  = "lm",
+              formula = y ~ poly(x, 6),
+              se      = FALSE,
+              size    = 1) +
+
+  scale_color_manual(name   = "Polynomial Degree",
+                     values = c("Degree 4" = "purple",
+                                "Degree 6" = "orange")) +
+
+  labs(title = "Wage vs Age: Polynomial Fits",
+       x     = "Age", 
+       y     = "Wage") +
+  theme_minimal()
+```
+
+## b. 
+
+```{r}
+set.seed(123)
+
+### CV for number of cuts ###
+cv.errors <- numeric(10)
+for (i in 1:10) {
+  Wage$cut <- cut(Wage$age, i+1)
+  fit_i <- glm(wage ~ cut, data = Wage)
+  cv.errors[i] <- cv.glm(Wage, fit_i, K = 10)$delta[1]
+}
+
+opt.i <- which.min(cv.errors)
+opt.i
+print(cv.errors[1:10])
+
+final_fit <- glm(wage ~ cut(age, opt.i),
+                 data = Wage)
+
+### Plotting with optimal model (i=10) ###
+x.grid <- seq(min(Wage$age), max(Wage$age), length.out = 200)
+
+preds <- predict(final_fit, newdata = data.frame(age = x.grid))
+pred_df <- data.frame(age=x.grid, wage=preds)
+
+ggplot() +
+  geom_point(data = Wage,
+             aes(age, wage),
+             alpha = 0.2,
+             color = "grey40") +
+  geom_step(data = pred_df,
+            aes(age, wage),
+            color = "orange",
+            size  = 1.2) +
+  labs(title = "Model with 10 cuts",
+       x = "Age", y = "Wage") +
+  theme_minimal()
+
+
+```
+
+# Problem 9
+
+## a.
+
+```{r}
+### Fitting ###
+fit <- lm(nox~poly(dis, 3, raw=TRUE), data=Boston)
+summary <- summary(fit)
+
+summary
+
+### Plotting ###
+x.grid <- seq(min(Boston$dis), max(Boston$dis), length.out = 1000)
+preds <- predict(fit, newdata = data.frame(dis=x.grid))
+pred_df <- data.frame(dis=x.grid, nox=preds)
+
+ggplot() +
+  geom_point(data = Boston,
+             aes(dis, nox),
+             alpha = 0.2,
+             color = "grey40") +
+  geom_step(data = pred_df,
+            aes(dis, nox),
+            color = "orange",
+            size  = 1.2) +
+  labs(title = "Cubic Polynomial fit nox~dis",
+       x = "dis", y = "nox") +
+  theme_minimal()
+```
+## b. 
+
+```{r}
+### Plotting poly fits ###
+ggplot(Boston, aes(dis, nox)) +
+  geom_point(alpha = 0.2, color = "grey40") +
+  
+  stat_smooth(aes(color = "Degree 1"),
+              method  = "lm",
+              formula = y ~ poly(x, 1),
+              se      = FALSE,
+              size    = 1) +
+  stat_smooth(aes(color = "Degree 2"),
+              method  = "lm",
+              formula = y ~ poly(x, 2),
+              se      = FALSE,
+              size    = 1) +
+  stat_smooth(aes(color = "Degree 3"),
+              method  = "lm",
+              formula = y ~ poly(x, 3),
+              se      = FALSE,
+              size    = 1) +
+  stat_smooth(aes(color = "Degree 4"),
+              method  = "lm",
+              formula = y ~ poly(x, 4),
+              se      = FALSE,
+              size    = 1) +
+  stat_smooth(aes(color = "Degree 5"),
+              method  = "lm",
+              formula = y ~ poly(x, 5),
+              se      = FALSE,
+              size    = 1) +
+  stat_smooth(aes(color = "Degree 6"),
+              method  = "lm",
+              formula = y ~ poly(x, 6),
+              se      = FALSE,
+              size    = 1) +
+  stat_smooth(aes(color = "Degree 7"),
+              method  = "lm",
+              formula = y ~ poly(x, 7),
+              se      = FALSE,
+              size    = 1) +
+  stat_smooth(aes(color = "Degree 8"),
+              method  = "lm",
+              formula = y ~ poly(x, 8),
+              se      = FALSE,
+              size    = 1) +
+  stat_smooth(aes(color = "Degree 9"),
+              method  = "lm",
+              formula = y ~ poly(x, 9),
+              se      = FALSE,
+              size    = 1) +
+  stat_smooth(aes(color = "Degree 10"),
+              method  = "lm",
+              formula = y ~ poly(x, 10),
+              se      = FALSE,
+              size    = 1) +
+
+  scale_color_manual(
+    name   = "Polynomial Degree",
+    values = setNames(rainbow(10), paste0("Degree ", 1:10)),
+    breaks = paste0("Degree ", 1:10)
+  ) +
+
+  labs(title = "nox vs dis: Polynomial Fits",
+       x     = "dis", 
+       y     = "nox") +
+  theme_minimal()
+
+### RSS for poly fits ###
+RSS=numeric(10)
+for(i in 1:10){
+  fit=lm(nox~poly(dis,i,raw=TRUE), data=Boston)
+  preds=predict(fit,Boston)
+  RSS[i]=sum((preds-Boston$nox)^2) 
+}
+
+RSS
+
+### Plotting RSS ###
+min.RSS <- which.min(RSS)
+min.RSS
+plot(seq(1,10,1), RSS, type="l")
+points(10, RSS[10], pch=20)
+```
+
+
+## c.
+
+I'm a bigger proponent for using ANOVA in this case. Since CV errors in the cv.glm function seek to minimize MSE, the MSE will decrease montonically with model complexity, so the CV method chooses d=10. On the other hand, we can see a dip in significance of adding another degree past d=3 in the ANOVA table. This indicates that the extra model complexity is not necessary and is likely fit well enough by a cubic polynomial. This is advantageous in model parsimony and reducing overfitting.
+
+```{r}
+set.seed(10101)
+
+cv.errors <- numeric(10)
+
+for (i in 1:10){
+  fit <- glm(nox~poly(dis,i,raw=TRUE), data=Boston)
+  cv.errors[i] <- cv.glm(Boston,fit,K=10)$delta[1]
+}
+
+cv.errors
+which.min(cv.errors)
+
+### ANOVA ###
+anova.fits <- lapply(1:10, function(i) lm(nox ~ poly(dis, i,raw=TRUE), data = Boston))
+anova.table <- do.call(anova, anova.fits)
+print(anova.table)
+```
+
+
+
+
+
+
+
+
+
+
+
+

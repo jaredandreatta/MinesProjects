@@ -1,0 +1,151 @@
+\documentclass[10pt]{report}
+\nofiles
+\usepackage{amsmath}
+\usepackage{graphicx,psfrag,epsf}
+\usepackage{enumerate}
+%\usepackage{natbib}
+\usepackage{float}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{arydshln}
+
+\usepackage{comment}
+\usepackage[framemethod=TikZ]{mdframed}
+\usepackage{lipsum}
+
+\input{/Users/nychka/Home/Tex/Teaching/ColorsFromR.tex}
+\input{/Users/nychka/Home/Tex/Teaching/ourDefinitions.tex}
+
+\setlength{\textwidth}{5.5in}
+\setlength{\evensidemargin}{0.50in}
+\setlength{\oddsidemargin}{0.50in} 
+\setlength{\textheight}{8.75in}
+\setlength{\topmargin}{0.00in}
+\setlength{\parskip}{.25in}
+\setlength{\parindent}{.25in}
+
+\renewcommand{\baselinestretch}{1.0}
+
+
+
+\begin{document}
+\vspace*{-1in}
+\noindent
+{\LARGE  \bf  \sc  MATH 531  Homework 7  \hfill  \today \\
+  }
+%{\large \it Colorado School of Mines}
+\noindent
+{\Large \bf OLS distribution theory    } 
+\ \\
+{\color{orange3} \hrule  }
+\ \\
+Each subsection counts for 10 points   
+
+
+ \subsubsection*{Introduction}
+ Throughout assume a linear model 
+\[  \by = X \beta + \be \]
+where $\by$ is an vector of length $n$ and $X$ is a full rank,
+ $n\times p$ matrix. $\be_i$ are independent $N(0,\sigma^2I)$. 
+
+\begin{enumerate} 
+\item 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%PROBLEM 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{enumerate}
+ \item  Following the notation and results in Section 3.8.1 of Seber and Lee let $\hat{\beta}_H$ be the OLS estimate under the constraint $A\beta =\bc$ for some known $A$ and $\bc$  (here $A$ is $q \times p$  and of course $q < p$.) 
+ Refer to the formula  (3.38) for $\hat{\beta}_H$  and  define the matrix $P_H$ as  satisfying $ P_H \by = X \hat{\beta}_H$ ( Yes, $P_H$ is pretty complicated!).   
+  \\
+ Show explicitly that  $P_H$ is a projection matrix. 
+ \item Seber and Lee also give a different derivation of the constrained OLS estimate in section 3.8.2. In their development what is the role of $\beta_0$?  How could this idea be used in section 3.8.1 to simplify the derivation? 
+ \end{enumerate}
+ 
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%PROBLEM 2
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\item  Following the linear model  displayed above  let $ X= QR$ be the  ``QR'' decomposition for $X$ Where the columns of $Q$ are orthogonal and $R$ is upper triangular.  This decomposition always exists for $X$ full rank. Now reparametrize the model as $\gamma= R \beta$ and so  
+\[  \by = Q \gamma + \be \]
+ and set  $ \hat{\gamma}$ as  the OLS estimate for $\gamma$. 
+ \begin{enumerate}
+ \item  Show that  $\{ \hat{\gamma}_j \}$ are independent, and normal with variance $\sigma^2$
+ \item  Let $\hat{\sigma}^2$ be the usual  unbiased estimate of $\sigma^2$ based on the residuals 
+ and let $\gamma_{T,j} $ be the true value of the parameter.
+ 
+ Show that  
+ \[ \frac{ (\hat{\gamma}_j - \gamma_{T,j })^2}{\hat{\sigma}^2} \]
+ is distributed as an F distribution, $F(1,n-p)$. 
+ 
+\item Show that $ R^{-1} \hat{\gamma} $ are the  usual OLS estimates for $\beta$
+
+\end{enumerate}
+
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%PROBLEM 3
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\item 
+Consider the AudiA4 data in the R binary file {\tt AudiA4.rda}.
+
+\begin{verbatim}
+> load("AudiA4.rda" )
+> head( AudiA4)
+  year price mileage distance
+1 2018 28999   21991        3
+2 2017 29389   40138        3
+3 2014    NA   43500        3
+4 2017 25863   35064        3
+5 2017 25749   50934        3
+6 2017 25999   44139        3
+\end{verbatim}
+Just to make the numbers easier to work with divide both the mileage and the price by 1000. 
+
+\begin{verbatim}
+mileage<- AudiA4$mileage/1000
+price<- AudiA4$price/1000
+\end{verbatim}
+
+Here is some R code to fit a piecewise linear function to price as a function of mileage where the break in the lines is at 30 (i.e 30,000  miles).  Also a simple plot to see the fit. 
+\begin{verbatim}
+brk<- 30 
+  X<- cbind( ifelse( mileage<= brk, 1, 0),
+             ifelse( mileage<= brk, mileage, 0),
+             ifelse( mileage > brk, 1, 0),
+             ifelse( mileage > brk, mileage, 0)
+             )
+fit<-   lm( price~ X - 1)
+#
+plot( mileage, price, pch=16)
+# note lines works because data is sorted by mileage ...
+lines( mileage, fit$fitted.values, col="red", lwd=2)
+\end{verbatim}
+
+ \begin{enumerate}
+ \item  Note that in the full OLS fit the broken line is not continuous at 30. 
+  What is the $A$ matrix in this case to enforce the constraint that the fit is continuous?
+  Note in this case you can write the constraint with $\bc = 0$.
+ \item  Code up the constrained estimate of $\hat{\beta_H}$ using  (3.38) from Seber and Lee and  add the predicted values for this fit onto a scatterplot of the data and the unconstrained OLS fit. 
+ 
+ \item  Here is a trick to fit a broken line that is continuous without using a constraint. (This is a simple case of the the more useful B-spline models for curve fitting.)
+ \begin{verbatim}
+brk<- 30 
+  X2<- cbind( 1, mileage,
+             ifelse( mileage > brk,  (mileage - brk), 0)
+             )
+fit2<-   lm( price ~ X2 - 1)  
+\end{verbatim}
+Explain why this will give the same predicted values as your constrained fit above.
+
+\end{enumerate}
+
+ \end{enumerate}
+ 
+\end{document}
+
+
+
+

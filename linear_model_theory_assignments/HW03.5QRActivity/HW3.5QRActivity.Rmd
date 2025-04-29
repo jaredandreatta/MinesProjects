@@ -1,0 +1,84 @@
+---
+title: "QR Execrcise 3.5 MATH531"
+author: "Jared Andreatta"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Getting started
+
+First here is an example dataset that you can use to illustrate OLS computations. Loading the AudiA4 data.The goal is to be able to predict the price of a used A4 based on the mileage and model year.
+
+```{r}
+library( fields) # load fields package
+load("AudiA4.rda" )
+head( AudiA4)
+# scale and adjust variables to be easier to interpret. 
+year<- AudiA4$year- min(AudiA4$year)
+mileage<- AudiA4$mileage/1000
+Y<- AudiA4$price/1000
+
+X<- cbind( 1, mileage, year  )
+  
+fit<-   lm( Y ~ X - 1)
+```
+
+For those students rusty with linear algebra in R here is a digression to find OLS estimates found "by hand".
+
+```{r}
+betaHat<- solve(t(X)%*%X)%*%t(X)%*%Y
+# check 
+bothBetas<- cbind(betaHat,fit$coefficients  )
+print( bothBetas)
+
+XbetaHat<- X%*%betaHat
+test.for.zero(XbetaHat, fit$fitted.values )
+```
+
+# Problem 1
+
+-   Define the QR decomposition of an $n \times p$ matrix $X$.\
+    Distinguish between the *skinny* QR where $Q$ is $n \times p$ and $R$ is $p \times p$ and the *fat* one where where $Q$ is $n \times n$ and $R$ is $n \times p$. (The skinny one is usually what is computed. )
+
+    -   The "skinny" QR Decomposition refers to the situation in which $Q \in \mathbb{R}^{n \times p}$ where $Q$ is comprised of orthonormal column vectors, and $n>p$, and more often than not, $n>>p$, as there tends to be more observations than features in the dataset; $R \in \mathbb{R}^{n \times n}$ is an upper right triangular matrix. In this case, the columns of $X$ are expressed as a linear combination with the orthonormal columns of $Q$.\
+        The "fat" QR Decomposition, where $Q \in \mathbb{R}^{n \times n}$ and $R \in \mathbb{R}^{n \times p}$. The difference in this is the number of columns in $Q$; $Q$ has $n$ columns that form an orthonormal basis of $\mathbb{R}^n$. $R$ is a rectangular matrix of dimension $n \times p$, where the upper triangular block has dimension of $p \times p$.\
+        To summarize, the "skinny" decomposition is often used for "tall" matrices due to its computational properties, whereas the "fat" decomposition is used to form an orthonormal basis that spans $\mathbb{R}^n$.
+
+-   Who invented the QR decomposition?
+
+    -   The QR algorithm was first proposed by John G. F. Francis and Vera N. Kublanovskaya (not collaboratively) in the late 1950s.
+
+-   Using the function `qr` and related functions ( `qr.coef`, `qr.Q`, etc. ) in R find the skinny QR decomposition of $X$ (List the first 5 rows of "Q" and all of "R")
+
+```{r}
+q = qr(X)
+head(qr.Q(q))
+```
+
+```{r}
+print(qr.R(q))
+```
+
+# Problem 2
+
+Use the QR decomposition to compute the OLS estimate for the Audi A4 data and verify that it is same as the `lm` result above.
+
+```{r}
+QR_X <- qr.Q(q)%*%qr.R(q)
+QRbetaHat <- QR_X%*%betaHat
+test.for.zero(XbetaHat, fit$fitted.values )
+head(QRbetaHat)
+```
+
+```{r}
+head(XbetaHat)
+```
+
+**Both estimators give the same output**

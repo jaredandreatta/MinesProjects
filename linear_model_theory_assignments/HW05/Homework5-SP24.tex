@@ -1,0 +1,100 @@
+\documentclass[10pt]{report}
+\nofiles
+\usepackage{amsmath}
+\usepackage{graphicx,psfrag,epsf}
+\usepackage{enumerate}
+%\usepackage{natbib}
+\usepackage{float}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{arydshln}
+
+\usepackage{comment}
+\usepackage[framemethod=TikZ]{mdframed}
+\usepackage{lipsum}
+
+\input{/Users/nychka/Home/Tex/Teaching/ColorsFromR.tex}
+\input{/Users/nychka/Home/Tex/Teaching/ourDefinitions.tex}
+
+\setlength{\textwidth}{5.5in}
+\setlength{\evensidemargin}{0.50in}
+\setlength{\oddsidemargin}{0.50in} 
+\setlength{\textheight}{8.75in}
+\setlength{\topmargin}{0.00in}
+\setlength{\parskip}{.25in}
+\setlength{\parindent}{.25in}
+
+\renewcommand{\baselinestretch}{1.0}
+
+
+
+\begin{document}
+\vspace*{-1in}
+\noindent
+{\LARGE  \bf  \sc  MATH 531  Homework 5  \\
+  }
+%{\large \it Colorado School of Mines}
+\noindent
+{\Large \bf   Least squares and maximum likelihood \\ \today} 
+\ \\
+{\color{orange3} \hrule  }
+\ \\
+Each subsection counts for 10 points  -- 60 points total and the extra credit counts for 5.  
+\begin{enumerate}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%PROBLEM 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\item  
+ Assume a linear model 
+\[  \by = X \beta + \be \]
+where $\by$ is an vector of length $n$ and $X$ is a full rank,
+ $n\times p$ matrix. $\be_i$ are independent $N(0,\sigma^2)$. Also suppose that $\beta_T$ is "true" value for $\beta$ and $\hat \beta$ the OLS/MLE estimate and $\hat{\sigma}$ the MLE for $\sigma$
+
+\begin{enumerate}
+ \item Let $RSS(\beta) = ( \by - X\beta)^T ( \by - X\beta)$ (aka the residual sums of squares). 
+Show the  regression {\it fun fact} that  for {\it any} $\beta$ 
+ \[ RSS(\beta) - RSS(\hat{\beta}) = (\beta -\hat{\beta})^T (X^TX) (\beta -\hat{\beta}) \]
+ 
+\item   Let $\ell( \by, \beta, \sigma^2) $ be the log likelihood for this model. 
+ Consider the  difference 
+  \[ D(\beta_T) = 2 \left[ \ell( \by, \hat{\beta},  \hat{\sigma}^2) - \ell( \by, \beta_T,  \hat{\sigma}^2)  \right] \]
+Explain why this difference is always nonnegative. 
+\item Use the fun fact above to simplify  as much as you can $D(\beta_T)$ .
+
+\item Let ${ \cal I}(\beta_T, \sigma^2)$ be the Fisher information  for this model and let $A$ be the submatrix that pertains to just $\beta$ and where the MLE's are substituted for the true parameters. 
+  Simplify the expression 
+\[ U(\beta_T)= (\hat{\beta} - \beta_T)^T  (A) (\hat{\beta} - \beta_T) \]
+and compare your result  $D(\beta_T)$.
+\\
+ \end{enumerate}
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%PROBLEM 2
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\item This problem is a continuation of problem 4 from HW04. \\
+Let $\by = \{Y_k\}$ be an independent random sample of size $n$ each value distributed according to the Laplace distribution with location and scale parameters $\mu$ and $b$.  Look up the density and details of this distribution on wikipedia. 
+\begin{enumerate}
+\item Report the log likelihood for $\by$  and provide a complete derivation of the MLEs for $\mu$ and $b$.
+(There are many references for this problem find a solution that you like best! You can assume that $n$ is odd if that makes your argument related to the median of $\by$ simpler.)
+
+\item Assume a linear model but let the errors be distributed according to the  Laplace distribution.  
+\[  \by = X \beta + \be \]
+where $\by$ is an vector of length $n$ and $X$ is a full rank,
+ $n\times p$ matrix. $\be_i$ are independent Laplace, mean zero and scale equal to $b$. 
+Setup up the log likelihood  to find the MLE for $\beta$ and $b$.   $\beta$ must be found numerically, however, explain why given the MLE $\hat{\beta}$ the MLE for $b$ has a closed form. 
+
+\item EXTRA CREDIT. Identify an R package that will allow you to find the MLE for $\beta$ for this model. 
+
+\end{enumerate}
+
+
+ \end{enumerate}
+ 
+\end{document}
+
+
+
+

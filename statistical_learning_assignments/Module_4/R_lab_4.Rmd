@@ -1,0 +1,91 @@
+---
+title: "R Lab 4"
+author: "Jared Andreatta"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document:
+     toc: false
+---
+
+# 3.6.4 Interaction terms
+
+```{r}
+library(ISLR2)
+attach(Boston)
+
+# Here is syntax for using interaction terms in a regression. We use lstat*age, which is
+# shorthand for lstat+age+lstat:age, where lstat:age is the actual interaction term. This
+# is an easy way to include interaction terms in a regression.
+fit_interact <- lm(medv ~ lstat*age, data=Boston)
+
+summary(fit_interact)
+```
+# 3.6.5 Nonlinear Transformations of Predictors
+lm() function can accomodate nonlinear tranformations. Given X, we can create X^2 using the I() function.
+
+```{r}
+# Be sure to include normal lstat term
+fit_nonlinear_transform <- lm(medv ~ lstat + I(lstat^2))
+# Statistically significant of lstat^2 indicates that the quadratic term is an improvement
+summary(fit_nonlinear_transform)
+
+# Next, we use the anova() function
+fit_lm <- lm(medv~lstat) # Regular linear model
+# ANOVA table indicates that regression with quadratic term is superior
+anova(fit_lm, fit_nonlinear_transform)
+
+# Plotting
+par(mfrow = c(2, 2))
+plot(fit_nonlinear_transform)
+
+# Higher order polynomials #
+# We can use the poly() function in our model for higher order polynomials'
+fit_poly5 <- lm(medv ~ poly(lstat,5))
+summary(fit_poly5) # Statistically significant for 5th degree polynomial estimation
+
+# We can also easily do a log tranform
+fit_log <- lm(medv~log(rm))
+summary(fit_log)
+
+```
+
+
+# 3.6.6 Qualitative Predictors
+
+```{r}
+# The Carseats dataset includes qualitative predictors
+head(Carseats)
+
+# Regression with all predictors and Income:Advertising and Price:Age interaction terms
+lm.fit <- lm(Sales ~ . + Income:Advertising + Price:Age,
+ data = Carseats)
+summary(lm.fit)
+
+# contrasts generates dummy variables for qualitative vars
+# This creates a "Good" variable if it is Good, and 0 if otherwise, 
+# a "Medium" variable that is 1 if medium, 0 if otherwise,
+# and a bad shelving location corresponds to when both of these dummies are 0.
+contrasts(Carseats$ShelveLoc)
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

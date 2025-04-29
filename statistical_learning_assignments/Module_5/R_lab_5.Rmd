@@ -1,0 +1,187 @@
+---
+title: "R Lab 4"
+author: "Jared Andreatta"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document:
+     toc: false
+---
+
+# 6.5.1 Subset Selection Methods
+
+## Best Subset Selection
+
+```{r}
+library(ISLR2)
+names(Hitters)
+
+dim(Hitters) # Dimension of data matrix
+
+sum(is.na(Hitters$Salary)) # Sums up NA values for salary of hitters
+
+Hitters <- na.omit(Hitters) # Omitting observations where any variable is NA
+sum(is.na(Hitters))
+```
+
+We can use the \textbf{leaps} library. 
+
+```{r}
+# install.packages("leaps")
+library(leaps)
+
+# regsubsets() automatically does best subset selection using RSS
+regfit.full <- regsubsets(Salary ~ ., data=Hitters)
+summary(regfit.full)
+```
+Asterisks indicate that the variable is included in the corresponding model. The \textbf{nvmax} parameter in the function lets us predetermine the max amount of variables.
+
+```{r}
+regfit.full <-regsubsets(Salary ~ ., data = Hitters, nvmax = 19) # 19 vars
+reg.summary <- summary(regfit.full)
+
+# Columns of summary object
+names(reg.summary)
+
+# R^2 
+reg.summary$rsq
+
+# Plotting the subset RSS  and adjusted R^2
+par(mfrow = c(1, 2))
+plot(reg.summary$rss, xlab = "Number of Variables",
+ ylab = "RSS", type = "l")
+plot(reg.summary$adjr2, xlab = "Number of Variables",
+ ylab = "Adjusted RSq", type = "l")
+
+# Finding max adj R^2
+which.max(reg.summary$adjr2) # Max # of vars
+plot(reg.summary$adjr2, xlab = "Number of Variables", ylab = "Adjusted RSq", type = "l") # Plotting adj R^2 line
+points(11, reg.summary$adjr2[11], col = "orange", cex = 2, pch = 20) # Plotting point on line
+
+# Analagous procedure for Cp
+plot(reg.summary$cp, xlab = "Number of Variables", ylab = "Cp", type = "l")
+which.min(reg.summary$cp)
+points(10, reg.summary$cp[10], col = "red", cex = 2, pch = 20)
+
+# Analagous procedure for BIC
+plot(reg.summary$bic, xlab = "Number of Variables", ylab = "BIC", type = "l")
+which.min(reg.summary$bic)
+points(6, reg.summary$bic[6], col = "red", cex = 2, pch = 20)
+```
+The \textbf{regsubsets()} function also has a built in plot command which can display selected variables for a model according to different metrics. The top row contains a black square for a selected variable in the optimal model
+
+```{r}
+plot(regfit.full, scale = "r2") # R^2
+plot(regfit.full, scale = "adjr2") # Adj R^2 
+plot(regfit.full, scale = "Cp") # C_p
+plot(regfit.full, scale = "bic") # BIC
+
+# Coefficients of 6th model
+coef(regfit.full, 6)
+```
+
+## Forward and Backward Stepwise Selection
+
+We can also use \textbf{regsubsets()} to perform stepwise selection using the 'method' parameter. Note that compared to the full best subset selection, the best models for 1-6 variables are all the same, so we will look at a 7 variable model.
+
+```{r}
+# Forward
+regfit.fwd <-regsubsets(Salary ~ ., data = Hitters, nvmax = 19, method = "forward")
+summary(regfit.fwd)
+
+# Backward
+regfit.bwd <-regsubsets(Salary ~ ., data = Hitters, nvmax = 19, method = "backward")
+summary(regfit.bwd)
+
+coef(regfit.full, 7)
+coef(regfit.fwd, 7)
+coef(regfit.bwd, 7)
+```
+
+## Choosing Among Models Using the Validation-Set Approach and Cross-Validation
+
+We start with the validation set approach.
+
+```{r}
+set.seed(1)
+# Create random vector of elements of TRUE or FALSe if the corresponding observation is in the training set. 
+train <-sample(c(TRUE, FALSE), nrow(Hitters), replace = TRUE)
+test <- (!train)
+
+# Apply regsubsets() to training data
+regfit.best <-regsubsets(Salary ~ ., data = Hitters[train, ], nvmax = 19)
+
+# Make test data matrix for model
+test.mat <- model.matrix(Salary ~ ., data = Hitters[test, ])
+
+val.errors <-rep(NA, 19)
+# Using test matrix to compute test MSE
+for (i in 1:19) {
+ coefi <-coef(regfit.best, id = i)
+ pred <- test.mat[, names(coefi)] %*% coefi
+ val.errors[i] <-mean((Hitters$Salary[test]- pred)^2)
+}
+
+val.errors
+which.min(val.errors) # Min errors for 7 vars
+coef(regfit.best, 7) # Coefs for 7 var model
+
+# This function just mimics the code above
+predict.regsubsets <- function(object, newdata, id, ...) {
+ form <-as.formula(object$call[[2]])
+ mat <-model.matrix(form, newdata)
+ coefi <-coef(object, id = id)
+ xvars <-names(coefi)
+ mat[, xvars] %*% coefi
+}
+
+## Now we apply the regsubsets() to the full data set ##
+regfit.best <-regsubsets(Salary ~ ., data = Hitters, nvmax = 19)
+# NOTE: the subset of variables is different than the set of variables from doing this on the training set
+coef(regfit.best, 7) 
+```
+
+Now, we move on to the cross-validation approach.
+
+```{r}
+# Set up for k-fold cross validation
+k <- 10
+n <-nrow(Hitters)
+set.seed(1)
+folds <-sample(rep(1:k, length = n))
+cv.errors <-matrix(NA, k, 19, dimnames = list(NULL, paste(1:19)))
+
+# For loop to perform cross validation 
+for (j in 1:k) {
+ best.fit <-regsubsets(Salary ~. , data = Hitters[folds != j, ], nvmax = 19)
+ for (i in 1:19) {
+  pred <-predict(best.fit, Hitters[folds == j, ], id = i)
+  cv.errors[j, i] <- mean((Hitters$Salary[folds == j]- pred)^2)
+ }
+}
+
+# Using apply() to average over the columns of the matrix
+mean.cv.errors <- apply(cv.errors, 2, mean)
+mean.cv.errors # This approach uses the 10 variable model
+
+# Plotting errors. Clear minimizer at 10
+par(mfrow=c(1,1))
+plot(mean.cv.errors, type = "b")
+
+# Now doing best subset selection for 10 vars
+reg.best <-regsubsets(Salary~., data = Hitters, nvmax = 19)
+coef(reg.best, 10)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+

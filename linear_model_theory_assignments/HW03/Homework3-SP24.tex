@@ -1,0 +1,96 @@
+\documentclass[11pt]{article}
+\usepackage{amssymb}
+\usepackage{amsthm,amssymb,amsmath,amsbsy}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{bm}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{enumitem,kantlipsum}
+\pagestyle{plain}
+\newcommand{\V}{\vspace{0.3in}}
+\newcommand{\VV}{\vspace{0.1in}}
+
+\newcommand{\Real}{\mbox{\Bbb R}}
+\newcommand{\Natural}{\mbox{\Bbb N}}
+\newcommand{\Integer}{\mbox{\Bbb Z}}
+
+\newcommand{\ra}{\rightarrow}
+
+%%% Soutir Bandyopadhyay's spacing %%%
+\oddsidemargin -0.25in 
+\textwidth 7in 
+\headheight 0in 
+\textheight 9in 
+\topmargin -0.5in 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[framemethod=TikZ]{mdframed}
+
+% here are a whole bunch of useful macros to make the latexing easier. 
+% also note the handy macros \bex and \eex if you want to get fancy ...
+
+\input{ourDefinitions.tex}
+
+
+\begin{document}
+%
+%
+\begin{center}
+\begin{tabular}{lcr}
+\textbf{MATH 531} & \hskip0.6in\textbf{Homework 3} & \hskip0.6in\textbf{Spring 2024}\\
+& \hskip0.6in\textbf{(Due: February 5, 2024)} &
+\end{tabular}
+\end{center}
+%
+%
+\begin{enumerate}
+
+
+\item Suppose $\bm{c}^{\mathrm{T}}\bm{\beta}$ is an estimable function, i.e.,  $\bm{c}^{\mathrm{T}}\in \mathcal{R}(\bm{X})$, the row space of $\bm{X}$. Then show that
+%
+%
+\begin{enumerate}[labelindent = 0pt]
+\item $\mathcal{R}(\bm{X}) = \mathcal{R}(\bm{X}^{\mathrm{T}}\bm{X})= \mathcal{C}(\bm{X}^{\mathrm{T}}\bm{X})$.
+\item $\bm{c}^{\mathrm{T}}\in \mathcal{R}(\bm{X}^{\mathrm{T}}\bm{X})$ if and only if  $\bm{c}^{\mathrm{T}} G \bm{X}^{\mathrm{T}}\bm{X}=\bm{c}^{\mathrm{T}}$, where $G$ is any generalized inverse of $\bm{X}^{\mathrm{T}}\bm{X}$.
+%
+%
+\end{enumerate} 
+\noindent \textbf{Remark.} Note that, to check whether $\bm{c}^{\mathrm{T}}\in \mathcal{R}(\bm{X})$ is often a tedious job in practice but from (a) and (b), we get an equivalent condition for estimability of a linear function, i.e., by checking whether  $\bm{c}^{\mathrm{T}} G \bm{X}^{\mathrm{T}}\bm{X}=\bm{c}^{\mathrm{T}}$.
+%
+%
+\item Consider the linear model 
+$$
+\bm{y} = \bm{X\beta} + \bm{\varepsilon},
+$$
+with $\mathbb{E}(\bm{\varepsilon})=0$ and $\mathrm{Var}(\bm{\varepsilon})=\sigma^{2}I$.
+ Suppose $\mathrm{Rank}(\bm{X})\leq p$. Suppose $\bm{c}_{1}^{\mathrm{T}}\bm{\beta}$ 
+ and $\bm{c}_{2}^{\mathrm{T}}\bm{\beta}$ are both estimable functions, then show that $\mbox{Cov}[\bm{c}_{1}
+ ^{\mathrm{T}}\widehat{\bm{\beta}},\bm{c}_{2}^{\mathrm{T}}\widehat{\bm{\beta}}] = \sigma^{2}\bm{c}_{1}
+ ^{\mathrm{T}}\bm{G}\bm{c}_{2}$, where $\bm{G}$ is any generalized inverse of $\bm{X}^{\mathrm{T}}\bm{X}$.
+
+%
+%
+\item
+ If $\mathrm{Rank}(\bm{X})$ has full rank, $p$, then we know 
+ $\widehat{\bm{\beta}}=(\bm{X}^{\mathrm{T}}\bm{X})^{-1}\bm{X}^{\mathrm{T}}\bm{y}$ starting from the normal equations as described in the class and we also know  $\mathbb{E}(\widehat{\bm{\beta}}) = \bm{\beta}$ is an unbiased estimator. Show:
+ 
+\begin{enumerate}
+\item $\mathrm{Cov}(\widehat{\bm{\beta}}) = \sigma^{2}(\bm{X}^{\mathrm{T}}\bm{X})^{-1}$.
+\item $\bm{c}^{\mathrm{T}}\bm{\beta}$ is estimable for any $\bm{c}^{\mathrm{T}}\in \mathbb{R}^{p}$. \item $\mathrm{Var}(\bm{c}^{\mathrm{T}}\widehat{\bm{\beta}}) = \sigma^{2}\bm{c}^{\mathrm{T}}(\bm{X}^{\mathrm{T}}\bm{X})^{-1}\bm{c}$, for any $\bm{c}^{\mathrm{T}}\in \mathbb{R}^{p}$.
+\item $\mathrm{Cov}(\bm{c_{1}}^{\mathrm{T}}\widehat{\bm{\beta}}, \bm{c_{2}}^{\mathrm{T}}\widehat{\bm{\beta}}) = \sigma^{2}\bm{c_{1}}^{\mathrm{T}}(\bm{X}^{\mathrm{T}}\bm{X})^{-1}\bm{c_{2}}$, for any $\bm{c_{1}}^{\mathrm{T}}, \bm{c_{2}}^{\mathrm{T}}\in \mathbb{R}^{p}$.
+\end{enumerate} 
+%
+
+%
+\end{enumerate}
+%
+%
+%
+%
+%
+%
+%
+%
+\end{document}
